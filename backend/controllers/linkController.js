@@ -116,3 +116,76 @@ const getLinkById = async(req, res) => {
         });
     }
 }
+
+const updateLink = async (req, res) => {
+    try{
+        let link = await Link.findById(req.params.id);
+
+        if(!link){
+            return res.status(404).json({
+                success: false,
+                message: 'Link not found'
+            });
+        }
+
+        if(link.userId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to update this link'
+            });
+        }
+
+        const {title, isActive, expiresAt} = req.body;
+        if(title !== undefined) link.title = title;
+        if(isActive !== undefined) link.isActive = isActive;
+        if(expiresAt !== undefined) link.expiresAt = expiresAt;
+
+        await link.save();
+
+        res.json({
+            success: true,
+            data: link
+        });
+    }
+    catch(error){
+        console.error('Update link error', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error updating link'
+        });
+    }
+}
+
+const deleteLink = async(req, res) => {
+    try{
+        const link = await Link.findById(req.params.id);
+
+        if(!link) {
+            return res.status(404).json({
+                success: false,
+                message: 'Link not found'
+            });
+        }
+
+        if(link.userId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to delete this link'
+            });
+        }
+
+        await link.deleteOne();
+
+        res.status(200).json({
+            success: true,
+            message: 'Link deleted successfully'
+        });
+    }
+    catch(error){
+        console.error('Delete link error', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error deleting link'
+        });
+    }
+}
