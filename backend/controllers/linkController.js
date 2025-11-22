@@ -189,3 +189,83 @@ const deleteLink = async(req, res) => {
         });
     }
 }
+
+const redirectLink = async (req, res) => {
+    try{
+        const {shortCode} = req.params;
+
+        const link = await Link.findOne({shortCode, isActive: true});
+
+        if(!link){
+            return res.status(404).json({
+                success: false,
+                message: 'Link not found or inactive'
+            });
+        }
+
+        if(link.isExpired()){
+            return res.status(404).json({
+                success: false,
+                message: 'Link has expired'
+            })
+        }
+
+        await link.incrementClicks();
+
+        trackAnalytics(link._id, req).catch(err =>{
+            console.error('Error tracking analytics', err);
+        })
+
+        res.redirect(link.originalUrl);
+    }
+    catch(error){
+        console.error('Redirect link error', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error redirecting link'
+        });
+    }
+}
+
+const trackAnalytics = async (linkId, req) => {
+    try{
+        const ip = req.headers['x-forwarded-for']?.split(',')[0] ||
+                   req.connection.remoteAddress ||
+                   req.socket.remoteAddress ||
+                   req.ip;
+
+        const location = await getLocationFromIP
+        
+        const userAgent = req.headers['user-agent'] || '';
+        const deviceInfo = parseDeviceInfo(userAgent);
+
+        const referrer = req.headers.referer || req.headers.referrer || 'direct';
+        const referrerDomain = extractReferrerDomain(referrer);
+
+        await Analytics.create({
+            linkId,
+            country : location.country,
+            city: location.city,
+            region: location.region,
+            device: deviceInfo.device,
+            os: deviceInfo.os,
+            browser: deviceInfo.browser,
+            referrer,
+            referrerDomain,
+            userAgent,
+            ipHash: hashIP(ip)
+        });
+    }
+    catch(error){
+        console.error('Error tracking analytics', error);
+    }
+}
+
+module.exports = {
+    createLink,
+    getAllLinks,
+    getLinkById,
+    updateLink,
+    deleteLink,
+    redirectLink
+}
