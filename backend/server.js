@@ -9,6 +9,8 @@ const connectDB = require('./config/db');
 
 const app = express();
 
+connectDB();
+
 app.use(helmet());
 
 app.use(cors({

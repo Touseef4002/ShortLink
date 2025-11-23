@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/auth');
 const {createLink, getAllLinks, getLinkById, updateLink, deleteLink} = require('../controllers/linkController');
 const { route } = require('./auth');
 

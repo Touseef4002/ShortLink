@@ -1,6 +1,8 @@
 const Link = require('../models/Link');
 const {generateShortCode} = require('../utils/generateShortCode');
-const {validateCustomAlias} = require('../utils/validateCustomAlias');
+const {validateCustomAlias} = require('../utils/generateShortCode');
+const {getLocationFromIP, parseDeviceInfo, extractReferrerDomain, hashIP} = require('../utils/geoLocation')
+const Analytics = require('../models/Analytics'); 
 
 const createLink = async(req, res) => {
     try{

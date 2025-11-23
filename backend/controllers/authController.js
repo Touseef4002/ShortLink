@@ -36,12 +36,19 @@ const login = async(req,res) => {
 
         if(!email || !password) return res.status(400).json({success: false, message: 'All fields are required'});
 
-        const user = User.findOne({email}).select('+password');
-        if(!user) return res.status(401).json({success: false, message: 'Invalid credentials'});
+        const user = await User.findOne({email}).select('+password');
+        if(!user) return res.status(401).json({
+            success: false, 
+            message: 'Invalid credentials'
+        });
 
         const isPasswordCorrect = await user.comparePassword(password);
 
-        if(!isPasswordCorrect) return res.status(401).json({success: false, message: 'Invalid credentials'});
+        if(!isPasswordCorrect) return res.status(401).json({
+            success: false, 
+            message: 'Invalid credentials'
+        });
+
 
         res.status(200).json({
             success: true,
