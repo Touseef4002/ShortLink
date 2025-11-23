@@ -18,6 +18,7 @@
 ## 🛠️ Tech Stack
 
 **Frontend**
+
 - React 18
 - React Router v6
 - TanStack Query (React Query)
@@ -27,6 +28,7 @@
 - Lucide Icons
 
 **Backend**
+
 - Node.js & Express
 - MongoDB & Mongoose
 - JWT Authentication
@@ -35,18 +37,21 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js v16+
 - MongoDB (local or Atlas)
 
 ### Installation
 
 1. Clone the repository
+
 ```bash
-git clone https://github.com/yourusername/linkly.git
+git clone https://github.com/Touseef4002/ShortLink.git
 cd linkly
 ```
 
 2. Setup Backend
+
 ```bash
 cd backend
 npm install
@@ -56,6 +61,7 @@ npm run dev
 ```
 
 3. Setup Frontend
+
 ```bash
 cd frontend
 npm install
