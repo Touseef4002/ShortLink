@@ -19,14 +19,26 @@ export default {
           800: '#075985',
           900: '#0c4a6e',
         },
+        dark: {
+          50: '#18181b',
+          100: '#27272a',
+          200: '#3f3f46',
+          300: '#52525b',
+          400: '#71717a',
+          500: '#a1a1aa',
+          600: '#d4d4d8',
+          700: '#e4e4e7',
+          800: '#f4f4f5',
+          900: '#fafafa',
+        }
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        'soft': '0 2px 15px rgba(0, 0, 0, 0.08)',
-        'medium': '0 4px 25px rgba(0, 0, 0, 0.12)',
-        'strong': '0 8px 40px rgba(0, 0, 0, 0.15)',
+        'soft': '0 2px 15px rgba(0, 0, 0, 0.3)',
+        'medium': '0 4px 25px rgba(0, 0, 0, 0.4)',
+        'strong': '0 8px 40px rgba(0, 0, 0, 0.5)',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',

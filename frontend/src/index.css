@@ -5,25 +5,26 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    @apply border-border;
-  }
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply bg-zinc-900 text-gray-100 antialiased;
     font-family: 'Inter', sans-serif;
   }
 }
 
 @layer utilities {
   .glass {
-    @apply bg-white/80 backdrop-blur-xl border border-gray-200/50;
+    @apply bg-zinc-800/80 backdrop-blur-xl border border-zinc-700/50;
   }
   
-  .gradient-bg {
-    @apply bg-gradient-to-br from-primary-500 via-blue-600 to-purple-600;
+  .card-dark {
+    @apply bg-zinc-800 border border-zinc-700;
   }
   
-  .text-gradient {
-    @apply bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent;
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white;
+  }
+  
+  .btn-secondary {
+    @apply bg-zinc-700 hover:bg-zinc-600 text-gray-100;
   }
 }
