@@ -1,13 +1,24 @@
 import { Link } from 'react-router-dom';
 import { Link2, BarChart3, Shield, Zap } from 'lucide-react';
+import DotGrid from '../components/DotGrid';
 
 export default function Landing() {
     return (
         <div className="min-h-screen bg-zinc-900">
-            {/* Hero Section */}
+            {/* Hero Section with DotGrid Background */}
             <div className="relative overflow-hidden bg-zinc-900">
+                {/* Animated Dot Grid Background */}
+                <DotGrid
+                    dotSize={2.5}
+                    gap={30}
+                    baseColor="#3f3f46"
+                    activeColor="#9333ea"
+                    proximity={120}
+                    shockRadius={200}
+                    shockStrength={3}
+                />
                 {/* Navbar */}
-                <nav className="container mx-auto px-4 py-6 border-b border-zinc-800">
+                <nav className="relative container mx-auto px-4 py-6 border-b border-zinc-800">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Link2 className="w-8 h-8 text-primary-500" />
@@ -31,7 +42,7 @@ export default function Landing() {
                 </nav>
 
                 {/* Hero Content */}
-                <div className="container mx-auto px-4 py-20 md:py-32">
+                <div className="relative container mx-auto px-4 py-20 md:py-32">
                     <div className="text-center max-w-4xl mx-auto">
                         <h1 className="text-5xl md:text-6xl font-extrabold mb-6 animate-fade-in text-white">
                             Shorten Your Links
@@ -49,20 +60,39 @@ export default function Landing() {
                             >
                                 Start for Free
                             </Link>
+                            <Link
+                                to="/login"
+                                className="px-8 py-4 bg-zinc-800 text-white rounded-xl font-semibold text-lg border border-zinc-700 hover:bg-zinc-700 transition-all duration-200"
+                            >
+                                Sign In
+                            </Link>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Features Section */}
-            <div className="container mx-auto px-4 py-20">
-                <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-white">
+            <div className="relative container mx-auto px-4 py-20">
+                {/* Dot Grid Background for Features */}
+                <div className="absolute inset-0 -mx-4">
+                    <DotGrid
+                        dotSize={2}
+                        gap={30}
+                        baseColor="#3f3f46"
+                        activeColor="#9333ea"
+                        proximity={100}
+                        shockRadius={150}
+                        shockStrength={2}
+                    />
+                </div>
+
+                <h2 className="relative text-3xl md:text-4xl font-bold text-center mb-12 text-white">
                     Why Choose <span className="text-primary-500">ShortLink</span>?
                 </h2>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="relative grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {/* Feature 1 */}
-                    <div className="bg-dark-100 rounded-2xl p-6 border border-dark-200 hover:border-primary-500 transition-all duration-300">
+                    <div className="bg-zinc-800 rounded-2xl p-6 border border-zinc-700 hover:border-primary-600 transition-all duration-300">
                         <div className="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
                             <Link2 className="w-6 h-6 text-primary-500" />
                         </div>
@@ -73,7 +103,7 @@ export default function Landing() {
                     </div>
 
                     {/* Feature 2 */}
-                    <div className="bg-dark-100 rounded-2xl p-6 border border-dark-200 hover:border-primary-500 transition-all duration-300">
+                    <div className="bg-zinc-800 rounded-2xl p-6 border border-zinc-700 hover:border-primary-600 transition-all duration-300">
                         <div className="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
                             <BarChart3 className="w-6 h-6 text-primary-500" />
                         </div>
@@ -84,7 +114,7 @@ export default function Landing() {
                     </div>
 
                     {/* Feature 3 */}
-                    <div className="bg-dark-100 rounded-2xl p-6 border border-dark-200 hover:border-primary-500 transition-all duration-300">
+                    <div className="bg-zinc-800 rounded-2xl p-6 border border-zinc-700 hover:border-primary-600 transition-all duration-300">
                         <div className="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
                             <Shield className="w-6 h-6 text-primary-500" />
                         </div>
@@ -95,7 +125,7 @@ export default function Landing() {
                     </div>
 
                     {/* Feature 4 */}
-                    <div className="bg-dark-100 rounded-2xl p-6 border border-dark-200 hover:border-primary-500 transition-all duration-300">
+                    <div className="bg-zinc-800 rounded-2xl p-6 border border-zinc-700 hover:border-primary-600 transition-all duration-300">
                         <div className="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
                             <Zap className="w-6 h-6 text-primary-500" />
                         </div>
@@ -108,7 +138,7 @@ export default function Landing() {
             </div>
 
             {/* CTA Section */}
-            <div className="bg-dark-100 border-y border-dark-200 py-20">
+            <div className="bg-zinc-800 border-y border-zinc-700 py-20">
                 <div className="container mx-auto px-4 text-center">
                     <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
                         Ready to Get Started?
@@ -126,7 +156,7 @@ export default function Landing() {
             </div>
 
             {/* Footer */}
-            <footer className="bg-dark-50 border-t border-dark-200 py-12">
+            <footer className="bg-zinc-900 border-t border-zinc-800 py-12">
                 <div className="container mx-auto px-4 text-center">
                     <div className="flex items-center justify-center gap-2 mb-4">
                         <Link2 className="w-6 h-6 text-primary-500" />
