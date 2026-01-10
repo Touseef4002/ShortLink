@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Link2, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Link2, Mail, Lock, User, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
-export default function Login() {
+export default function Register() {
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { register } = useAuth();
 
     const [formData, setFormData] = useState({
+        name: '',
         email: '',
-        password: ''
+        password: '',
+        confirmPassword: ''
     });
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
@@ -28,13 +30,31 @@ export default function Login() {
         setError('');
         setLoading(true);
 
-        if (!formData.email || !formData.password) {
+        // Validation
+        if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
             setError('Please fill in all fields');
             setLoading(false);
             return;
         }
 
-        const result = await login(formData);
+        if (formData.password.length < 6) {
+            setError('Password must be at least 6 characters');
+            setLoading(false);
+            return;
+        }
+
+        if (formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match');
+            setLoading(false);
+            return;
+        }
+
+        // Call register API
+        const result = await register({
+            name: formData.name,
+            email: formData.email,
+            password: formData.password
+        });
 
         if (result.success) {
             navigate('/dashboard');
@@ -45,7 +65,7 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-zinc-900 flex items-center justify-center px-4">
+        <div className="min-h-screen bg-zinc-900 flex items-center justify-center px-4 py-12">
             <div className="w-full max-w-md">
                 {/* Logo */}
                 <div className="text-center mb-8">
@@ -53,12 +73,12 @@ export default function Login() {
                         <Link2 className="w-10 h-10 text-primary-500" />
                         <span className="text-3xl font-bold text-white">ShortLink</span>
                     </Link>
-                    <p className="text-gray-400">Welcome back! Please login to your account.</p>
+                    <p className="text-gray-400">Create your account to get started.</p>
                 </div>
 
-                {/* Login Card */}
+                {/* Register Card */}
                 <div className="bg-zinc-800 border border-zinc-700 rounded-2xl p-8 shadow-strong">
-                    <h2 className="text-2xl font-bold text-white mb-6">Login</h2>
+                    <h2 className="text-2xl font-bold text-white mb-6">Create Account</h2>
 
                     {/* Error Message */}
                     {error && (
@@ -70,6 +90,26 @@ export default function Login() {
 
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-5">
+                        {/* Name Field */}
+                        <div>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
+                                Full Name
+                            </label>
+                            <div className="relative">
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                                <input
+                                    type="text"
+                                    id="name"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    placeholder="John Doe"
+                                    className="w-full pl-11 pr-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white placeholder-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
+                                    disabled={loading}
+                                />
+                            </div>
+                        </div>
+
                         {/* Email Field */}
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
@@ -122,14 +162,24 @@ export default function Login() {
                             </div>
                         </div>
 
-                        {/* Forgot Password Link */}
-                        <div className="flex justify-end">
-                            <Link
-                                to="/forgot-password"
-                                className="text-sm text-primary-500 hover:text-primary-400 transition-colors"
-                            >
-                                Forgot password?
-                            </Link>
+                        {/* Confirm Password Field */}
+                        <div>
+                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
+                                Confirm Password
+                            </label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    id="confirmPassword"
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                    className="w-full pl-11 pr-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white placeholder-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
+                                    disabled={loading}
+                                />
+                            </div>
                         </div>
 
                         {/* Submit Button */}
@@ -141,10 +191,10 @@ export default function Login() {
                             {loading ? (
                                 <span className="flex items-center justify-center gap-2">
                                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                    Logging in...
+                                    Creating account...
                                 </span>
                             ) : (
-                                'Login'
+                                'Create Account'
                             )}
                         </button>
                     </form>
@@ -155,16 +205,16 @@ export default function Login() {
                             <div className="w-full border-t border-zinc-700"></div>
                         </div>
                         <div className="relative flex justify-center text-sm">
-                            <span className="px-4 bg-zinc-800 text-gray-500">Don't have an account?</span>
+                            <span className="px-4 bg-zinc-800 text-gray-500">Already have an account?</span>
                         </div>
                     </div>
 
-                    {/* Register Link */}
+                    {/* Login Link */}
                     <Link
-                        to="/register"
+                        to="/login"
                         className="block w-full py-3 bg-zinc-700 text-white text-center rounded-xl font-semibold hover:bg-zinc-600 transition-all duration-200"
                     >
-                        Create Account
+                        Login
                     </Link>
                 </div>
 

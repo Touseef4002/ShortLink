@@ -2,8 +2,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
-// import Register from './pages/Register';
-// import Dashboard from './pages/Dashboard';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
 // import LinkDetails from './pages/LinkDetails';
 // import NotFound from './pages/NotFound';
 
@@ -50,25 +50,24 @@ function AppRoutes() {
           </PublicRoute>
         }
       />
-      {/* Uncomment as we create these pages */}
-      {/* <Route 
-        path="/register" 
+      <Route
+        path="/register"
         element={
           <PublicRoute>
             <Register />
           </PublicRoute>
-        } 
-      /> */}
+        }
+      />
 
       {/* Protected Routes */}
-      {/* <Route 
-        path="/dashboard" 
+      <Route
+        path="/dashboard"
         element={
           <ProtectedRoute>
             <Dashboard />
           </ProtectedRoute>
-        } 
-      /> */}
+        }
+      />
       {/* <Route 
         path="/links/:id" 
         element={
