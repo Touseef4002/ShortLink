@@ -1,19 +1,23 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { linksAPI } from '../services/api';
 import {
     Link2, Plus, Copy, ExternalLink, Trash2, BarChart3,
-    LogOut, User, AlertCircle, CheckCircle, Loader
+    LogOut, User, AlertCircle, CheckCircle, Loader, QrCode, Download, X
 } from 'lucide-react';
+import QRCodeCanvas from 'qrcode';
 
 export default function Dashboard() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const qrCanvasRef = useRef(null);
 
     const [showCreateForm, setShowCreateForm] = useState(false);
+    const [showQRModal, setShowQRModal] = useState(false);
+    const [selectedLink, setSelectedLink] = useState(null);
     const [formData, setFormData] = useState({
         originalUrl: '',
         customAlias: '',
@@ -23,6 +27,7 @@ export default function Dashboard() {
     const [copySuccess, setCopySuccess] = useState(null);
     const [formError, setFormError] = useState('');
 
+    // Fetch links
     const { data: linksData, isLoading } = useQuery({
         queryKey: ['links'],
         queryFn: async () => {
@@ -31,6 +36,7 @@ export default function Dashboard() {
         }
     });
 
+    // Create link
     const createLinkMutation = useMutation({
         mutationFn: (data) => linksAPI.create(data),
         onSuccess: () => {
@@ -44,6 +50,7 @@ export default function Dashboard() {
         }
     });
 
+    // Delete link
     const deleteLinkMutation = useMutation({
         mutationFn: (id) => linksAPI.delete(id),
         onSuccess: () => {
@@ -79,6 +86,34 @@ export default function Dashboard() {
         navigate('/');
     }
 
+    const handleShowQR = async (link) => {
+        setSelectedLink(link);
+        setShowQRModal(true);
+
+        // Generate QR code
+        setTimeout(async () => {
+            if (qrCanvasRef.current) {
+                await QRCodeCanvas.toCanvas(qrCanvasRef.current, link.shortUrl, {
+                    width: 300,
+                    margin: 2,
+                    color: {
+                        dark: '#9333ea',
+                        light: '#ffffff'
+                    }
+                });
+            }
+        }, 100);
+    };
+
+    const handleDownloadQR = () => {
+        if (qrCanvasRef.current) {
+            const url = qrCanvasRef.current.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `qr-${selectedLink.shortCode}.png`;
+            link.href = url;
+            link.click();
+        }
+    };
     return (
         <div className="min-h-screen bg-zinc-900">
             {/* Navbar */}
@@ -112,7 +147,6 @@ export default function Dashboard() {
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-white mb-2">Your Links</h1>
                     <p className="text-gray-400">Create and manage your short links</p>
-                    <p className="text-gray-400">You have {linksData?.length || 0} links</p>
                 </div>
 
                 {/* Create Link Button */}
@@ -246,14 +280,14 @@ export default function Dashboard() {
                             >
                                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="text-lg font-semibold text-white mb-1 truncate">
+                                        <h3 className="text-xl font-semibold text-white mb-1 truncate">
                                             {link.title || 'Untitled Link'}
                                         </h3>
-                                        <p className="text-gray-400 text-sm mb-2 truncate">
+                                        <p className="text-gray-400 text-md mb-2 truncate">
                                             {link.originalUrl}
                                         </p>
                                         <div className="flex items-center gap-2 mb-3">
-                                            <code className="px-3 py-1 bg-zinc-900 text-primary-400 rounded-lg text-sm font-mono">
+                                            <code className="px-3 py-1 bg-zinc-900 text-primary-400 rounded-lg text-md font-mono">
                                                 {link.shortUrl}
                                             </code>
                                             <button
@@ -268,13 +302,21 @@ export default function Dashboard() {
                                                 )}
                                             </button>
                                         </div>
-                                        <div className="flex items-center gap-4 text-sm text-gray-400">
+                                        <div className="flex items-center gap-4 text-md text-gray-400">
                                             <span>👁 {link.clicks} clicks</span>
-                                            <span>📅 {new Date(link.createdAt).toLocaleDateString("en-GB")}</span>
+                                            <span>📅 {new Date(link.createdAt).toLocaleDateString()}</span>
                                         </div>
                                     </div>
 
                                     <div className="flex sm:flex-col gap-2">
+                                        <button
+                                            onClick={() => handleShowQR(link)}
+                                            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
+                                            title="QR Code"
+                                        >
+                                            <QrCode className="w-4 h-4" />
+                                            <span className="hidden sm:inline">QR</span>
+                                        </button>
                                         <button
                                             onClick={() => navigate(`/links/${link._id}`)}
                                             className="flex items-center gap-2 px-4 py-2 bg-zinc-700 text-white rounded-xl hover:bg-zinc-600 transition-colors"
@@ -309,6 +351,40 @@ export default function Dashboard() {
                     </div>
                 )}
             </div>
+
+            {/* QR Code Modal */}
+            {showQRModal && selectedLink && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-zinc-800 border border-zinc-700 rounded-2xl p-6 max-w-md w-full">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-xl font-semibold text-white">QR Code</h3>
+                            <button
+                                onClick={() => setShowQRModal(false)}
+                                className="text-gray-400 hover:text-white transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="text-center mb-4">
+                            <p className="text-gray-400 text-sm mb-2">{selectedLink.title || 'Untitled Link'}</p>
+                            <code className="text-primary-400 text-sm">{selectedLink.shortUrl}</code>
+                        </div>
+
+                        <div className="flex justify-center mb-4 bg-white p-4 rounded-xl">
+                            <canvas ref={qrCanvasRef}></canvas>
+                        </div>
+
+                        <button
+                            onClick={handleDownloadQR}
+                            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
+                        >
+                            <Download className="w-5 h-5" />
+                            Download QR Code
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
