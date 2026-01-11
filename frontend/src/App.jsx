@@ -4,7 +4,7 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-// import LinkDetails from './pages/LinkDetails';
+import LinkDetails from './pages/LinkDetails';
 // import NotFound from './pages/NotFound';
 
 // Protected Route Component
@@ -68,14 +68,14 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      {/* <Route 
-        path="/links/:id" 
+      <Route
+        path="/links/:id"
         element={
           <ProtectedRoute>
             <LinkDetails />
           </ProtectedRoute>
-        } 
-      /> */}
+        }
+      />
 
       {/* 404 */}
       {/* <Route path="*" element={<NotFound />} /> */}

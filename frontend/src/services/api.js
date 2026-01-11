@@ -49,7 +49,7 @@ export const linksAPI = {
 
 export const analyticsAPI = {
     getAnalytics : (linkId) => api.get(`/api/analytics/${linkId}`),
-    getSummary : (linkId) => api.get('/api/analytics/${linkId}/summary'),
+    getSummary : (linkId) => api.get(`/api/analytics/${linkId}/summary`),
 };
 
 export default api;

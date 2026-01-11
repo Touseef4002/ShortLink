@@ -27,8 +27,8 @@ const analyticsSchema = new mongoose.Schema({
 
     device:{
         type: String,
-        enum: ['Desktop', 'Mobile', 'Tablet', 'Unknown'],
-        default: 'Unknown'
+        enum: ['mobile', 'tablet', 'desktop', 'unknown'],
+        default: 'unknown'
     },
     os:{
         type: String,

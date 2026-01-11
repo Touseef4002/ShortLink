@@ -270,7 +270,7 @@ export default function Dashboard() {
                                         </div>
                                         <div className="flex items-center gap-4 text-sm text-gray-400">
                                             <span>👁 {link.clicks} clicks</span>
-                                            <span>📅 {new Date(link.createdAt).toLocaleDateString()}</span>
+                                            <span>📅 {new Date(link.createdAt).toLocaleDateString("en-GB")}</span>
                                         </div>
                                     </div>
 
