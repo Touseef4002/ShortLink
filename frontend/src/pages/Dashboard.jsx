@@ -2,10 +2,11 @@ import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { linksAPI } from '../services/api';
+import { linksAPI, analyticsAPI } from '../services/api';
 import {
     Link2, Plus, Copy, ExternalLink, Trash2, BarChart3,
-    LogOut, User, AlertCircle, CheckCircle, Loader, QrCode, Download, X
+    LogOut, User, AlertCircle, CheckCircle, Loader, QrCode, Download, X,
+    TrendingUp, MousePointerClick, Award, Calendar
 } from 'lucide-react';
 import QRCodeCanvas from 'qrcode';
 
@@ -27,6 +28,15 @@ export default function Dashboard() {
     const [copySuccess, setCopySuccess] = useState(null);
     const [formError, setFormError] = useState('');
 
+    // Fetch dashboard stats
+    const { data: dashboardStats, isLoading: statsLoading } = useQuery({
+        queryKey: ['dashboardStats'],
+        queryFn: async () => {
+            const response = await analyticsAPI.getDashboardStats();
+            return response.data.data;
+        }
+    });
+
     // Fetch links
     const { data: linksData, isLoading } = useQuery({
         queryKey: ['links'],
@@ -41,6 +51,7 @@ export default function Dashboard() {
         mutationFn: (data) => linksAPI.create(data),
         onSuccess: () => {
             queryClient.invalidateQueries(['links']);
+            queryClient.invalidateQueries(['dashboardStats']);
             setFormData({ originalUrl: '', customAlias: '', title: '' });
             setShowCreateForm(false);
             setFormError('');
@@ -55,6 +66,7 @@ export default function Dashboard() {
         mutationFn: (id) => linksAPI.delete(id),
         onSuccess: () => {
             queryClient.invalidateQueries(['links']);
+            queryClient.invalidateQueries(['dashboardStats']);
         }
     });
 
@@ -114,6 +126,7 @@ export default function Dashboard() {
             link.click();
         }
     };
+
     return (
         <div className="min-h-screen bg-zinc-900">
             {/* Navbar */}
@@ -148,6 +161,95 @@ export default function Dashboard() {
                     <h1 className="text-3xl font-bold text-white mb-2">Your Links</h1>
                     <p className="text-gray-400">Create and manage your short links</p>
                 </div>
+
+                {/* Stats Cards */}
+                {statsLoading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        {[1, 2, 3, 4].map((i) => (
+                            <div key={i} className="bg-zinc-800 border border-zinc-700 rounded-2xl p-6 animate-pulse">
+                                <div className="h-10 bg-zinc-700 rounded mb-2"></div>
+                                <div className="h-8 bg-zinc-700 rounded"></div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        {/* Total Links */}
+                        <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="p-3 bg-white/20 rounded-xl">
+                                    <Link2 className="w-6 h-6" />
+                                </div>
+                                <TrendingUp className="w-5 h-5 opacity-50" />
+                            </div>
+                            <p className="text-sm opacity-90 mb-1">Total Links</p>
+                            <p className="text-3xl font-bold">{dashboardStats?.totalLinks || 0}</p>
+                            <p className="text-xs opacity-75 mt-2">
+                                {dashboardStats?.recentLinksCount || 0} created this week
+                            </p>
+                        </div>
+
+                        {/* Total Clicks */}
+                        <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="p-3 bg-white/20 rounded-xl">
+                                    <MousePointerClick className="w-6 h-6" />
+                                </div>
+                                <BarChart3 className="w-5 h-5 opacity-50" />
+                            </div>
+                            <p className="text-sm opacity-90 mb-1">Total Clicks</p>
+                            <p className="text-3xl font-bold">{dashboardStats?.totalClicks || 0}</p>
+                            <p className="text-xs opacity-75 mt-2">
+                                Across all your links
+                            </p>
+                        </div>
+
+                        {/* Most Popular Link */}
+                        <div className="bg-gradient-to-br from-amber-600 to-amber-700 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="p-3 bg-white/20 rounded-xl">
+                                    <Award className="w-6 h-6" />
+                                </div>
+                                <TrendingUp className="w-5 h-5 opacity-50" />
+                            </div>
+                            <p className="text-sm opacity-90 mb-1">Most Popular</p>
+                            {dashboardStats?.mostPopularLink ? (
+                                <>
+                                    <p className="text-2xl font-bold truncate">
+                                        {dashboardStats.mostPopularLink.clicks} clicks
+                                    </p>
+                                    <p className="text-xs opacity-75 mt-2 truncate">
+                                        {dashboardStats.mostPopularLink.title}
+                                    </p>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-2xl font-bold">-</p>
+                                    <p className="text-xs opacity-75 mt-2">No links yet</p>
+                                </>
+                            )}
+                        </div>
+
+                        {/* Average Clicks */}
+                        <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="p-3 bg-white/20 rounded-xl">
+                                    <Calendar className="w-6 h-6" />
+                                </div>
+                                <BarChart3 className="w-5 h-5 opacity-50" />
+                            </div>
+                            <p className="text-sm opacity-90 mb-1">Avg. per Link</p>
+                            <p className="text-3xl font-bold">
+                                {dashboardStats?.totalLinks > 0
+                                    ? Math.round(dashboardStats.totalClicks / dashboardStats.totalLinks)
+                                    : 0}
+                            </p>
+                            <p className="text-xs opacity-75 mt-2">
+                                Average clicks per link
+                            </p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Create Link Button */}
                 {!showCreateForm && (
@@ -303,7 +405,7 @@ export default function Dashboard() {
                                             </button>
                                         </div>
                                         <div className="flex items-center gap-4 text-md text-gray-400">
-                                            <span>👁 {link.clicks} clicks</span>
+                                            <span>👆 {link.clicks} clicks</span>
                                             <span>📅 {new Date(link.createdAt).toLocaleDateString()}</span>
                                         </div>
                                     </div>

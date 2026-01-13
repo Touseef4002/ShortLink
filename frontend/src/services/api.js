@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'https://localhost:5000',
   headers: {
@@ -50,6 +49,7 @@ export const linksAPI = {
 export const analyticsAPI = {
     getAnalytics : (linkId) => api.get(`/api/analytics/${linkId}`),
     getSummary : (linkId) => api.get(`/api/analytics/${linkId}/summary`),
+    getDashboardStats : () => api.get('/api/analytics/dashboard/stats'),
 };
 
 export default api;

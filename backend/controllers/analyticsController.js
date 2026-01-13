@@ -91,6 +91,51 @@ const getAnalyticsSummary = async (req, res) => {
     }
 }
 
+const getDashboardStats = async (req, res) => {
+    try{
+        const userId = req.user._id;
+
+        //get all user's links
+        const userLinks = await Link.find({userId});
+
+        const totalLinks = userLinks.length;
+
+        const totalClicks = userLinks.reduce((sum, link) => sum + link.clicks, 0);
+        
+        const mostPopularLink = userLinks.length > 0 
+            ? userLinks.reduce((max, link) => (link.clicks > max.clicks ? link : max), userLinks[0])
+            : null;
+
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const recentLinksCount = userLinks.filter(link => new Date(link.createdAt) >= sevenDaysAgo).length;
+
+        res.status(200).json({
+            success: true,
+            data: {
+                totalLinks,
+                totalClicks,
+                mostPopularLink : mostPopularLink ? {
+                    _id: mostPopularLink._id,
+                    title: mostPopularLink.title || 'Untitled Link',
+                    shortCode: mostPopularLink.shortCode,
+                    shortUrl: mostPopularLink.shortUrl,
+                    clicks: mostPopularLink.clicks,
+                    originalUrl: mostPopularLink.originalUrl
+                } : null,
+                recentLinksCount
+            }
+        });
+    }
+    catch(error){
+        console.error('Get dashboard stats error', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error getting dashboard stats'
+        });
+    }
+}
+
 const groupBy = (array, field) => {
     const grouped = {};
 
@@ -133,5 +178,6 @@ const countUnique = (array, field) => {
 
 module.exports = {
     getLinkAnalytics,
-    getAnalyticsSummary
+    getAnalyticsSummary,
+    getDashboardStats
 }
