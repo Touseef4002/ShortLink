@@ -6,8 +6,16 @@
 
 @layer base {
   body {
-    @apply bg-zinc-900 text-gray-100 antialiased;
+    @apply antialiased transition-colors duration-200;
     font-family: 'Inter', sans-serif;
+  }
+
+  .dark body {
+    @apply bg-zinc-900 text-gray-100;
+  }
+
+  .light body {
+    @apply bg-gray-50 text-gray-900;
   }
 }
 
@@ -16,6 +24,10 @@
     @apply bg-zinc-800/80 backdrop-blur-xl border border-zinc-700/50;
   }
   
+  .card-light {
+    @apply bg-white border border-gray-200;
+  }
+
   .card-dark {
     @apply bg-zinc-800 border border-zinc-700;
   }
@@ -26,5 +38,21 @@
   
   .btn-secondary {
     @apply bg-zinc-700 hover:bg-zinc-600 text-gray-100;
+  }
+
+  .bg-card{
+    @apply bg-zinc-800 dark:bg-zinc-800 light:bg-white;
+  }
+
+  .border-card {
+    @apply border-zinc-700 dark:border-zinc-700 light:border-gray-200;
+  }
+  
+  .text-primary {
+    @apply text-gray-100 dark:text-gray-100 light:text-gray-900;
+  }
+  
+  .text-secondary {
+    @apply text-gray-400 dark:text-gray-400 light:text-gray-600;
   }
 }

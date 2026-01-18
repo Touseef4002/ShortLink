@@ -2,17 +2,19 @@ import { useState, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { linksAPI, analyticsAPI } from '../services/api';
 import {
     Link2, Plus, Copy, ExternalLink, Trash2, BarChart3,
     LogOut, User, AlertCircle, CheckCircle, Loader, QrCode, Download, X,
     TrendingUp, MousePointerClick, Award, Calendar, Search, Filter, SortAsc, SortDesc,
-    CheckSquare, Square, FileDown
+    CheckSquare, Square, FileDown, Sun, Moon
 } from 'lucide-react';
 import QRCodeCanvas from 'qrcode';
 
 export default function Dashboard() {
     const { user, logout } = useAuth();
+    const { theme, toggleTheme, isDark } = useTheme();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const qrCanvasRef = useRef(null);
@@ -252,23 +254,36 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-zinc-900">
+        <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 transition-colors duration-200">
             {/* Navbar */}
-            <nav className="bg-zinc-800 border-b border-zinc-700">
+            <nav className="bg-white dark:bg-zinc-800 border-b border-gray-200 dark:border-zinc-700 transition-colors duration-200">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Link2 className="w-8 h-8 text-primary-500" />
-                            <span className="text-2xl font-bold text-white">ShortLink</span>
+                            <span className="text-2xl font-bold text-gray-900 dark:text-white">ShortLink</span>
                         </div>
                         <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 text-gray-300">
+                            {/* Theme Toggle Button */}
+                            <button
+                                onClick={toggleTheme}
+                                className="p-2 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors"
+                                title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                            >
+                                {isDark ? (
+                                    <Sun className="w-5 h-5" />
+                                ) : (
+                                    <Moon className="w-5 h-5" />
+                                )}
+                            </button>
+
+                            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                                 <User className="w-5 h-5" />
                                 <span className="hidden sm:inline">{user?.name}</span>
                             </div>
                             <button
                                 onClick={handleLogout}
-                                className="flex items-center gap-2 px-4 py-2 bg-zinc-700 text-white rounded-xl hover:bg-zinc-600 transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl hover:bg-gray-300 dark:hover:bg-zinc-600 transition-colors"
                             >
                                 <LogOut className="w-4 h-4" />
                                 <span className="hidden sm:inline">Logout</span>
@@ -282,17 +297,17 @@ export default function Dashboard() {
             <div className="container mx-auto px-4 py-8">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-white mb-2">Your Links</h1>
-                    <p className="text-gray-400">Create and manage your short links</p>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Your Links</h1>
+                    <p className="text-gray-600 dark:text-gray-400">Create and manage your short links</p>
                 </div>
 
                 {/* Stats Cards */}
                 {statsLoading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                         {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="bg-zinc-800 border border-zinc-700 rounded-2xl p-6 animate-pulse">
-                                <div className="h-10 bg-zinc-700 rounded mb-2"></div>
-                                <div className="h-8 bg-zinc-700 rounded"></div>
+                            <div key={i} className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-2xl p-6 animate-pulse">
+                                <div className="h-10 bg-gray-200 dark:bg-zinc-700 rounded mb-2"></div>
+                                <div className="h-8 bg-gray-200 dark:bg-zinc-700 rounded"></div>
                             </div>
                         ))}
                     </div>
@@ -376,12 +391,12 @@ export default function Dashboard() {
                 )}
 
                 {/* Bulk Operations Bar */}
-                {selectedLinks.length > 0 && (
+                {selectedLinks && selectedLinks.length > 0 && (
                     <div className="mb-6 bg-primary-600 rounded-xl p-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <CheckSquare className="w-5 h-5 text-white" />
                             <span className="text-white font-medium">
-                                {selectedLinks.length} link{selectedLinks.length !== 1 ? 's' : ''} selected
+                                {selectedLinks?.length || 0} link{(selectedLinks?.length || 0) !== 1 ? 's' : ''} selected
                             </span>
                         </div>
                         <div className="flex gap-2">
@@ -419,18 +434,18 @@ export default function Dashboard() {
                 <div className="mb-6 space-y-4">
                     {/* Search Bar */}
                     <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search by title, URL, or short code..."
-                            className="w-full pl-12 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
+                            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
                         />
                         {searchQuery && (
                             <button
                                 onClick={() => setSearchQuery('')}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -440,15 +455,15 @@ export default function Dashboard() {
                     {/* Filter and Sort Buttons */}
                     <div className="flex flex-wrap items-center gap-3">
                         <div className="flex items-center gap-2">
-                            <Filter className="w-4 h-4 text-gray-400" />
-                            <span className="text-sm text-gray-400">Filter:</span>
+                            <Filter className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                            <span className="text-sm text-gray-600 dark:text-gray-400">Filter:</span>
                         </div>
 
                         <button
                             onClick={() => setFilterBy('all')}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterBy === 'all'
                                 ? 'bg-primary-600 text-white'
-                                : 'bg-zinc-800 text-gray-400 hover:bg-zinc-700'
+                                : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
                                 }`}
                         >
                             All Links
@@ -458,7 +473,7 @@ export default function Dashboard() {
                             onClick={() => setFilterBy('most-clicked')}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterBy === 'most-clicked'
                                 ? 'bg-primary-600 text-white'
-                                : 'bg-zinc-800 text-gray-400 hover:bg-zinc-700'
+                                : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
                                 }`}
                         >
                             Most Clicked
@@ -468,7 +483,7 @@ export default function Dashboard() {
                             onClick={() => setFilterBy('recent')}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterBy === 'recent'
                                 ? 'bg-primary-600 text-white'
-                                : 'bg-zinc-800 text-gray-400 hover:bg-zinc-700'
+                                : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
                                 }`}
                         >
                             Recent (7 days)
@@ -477,10 +492,10 @@ export default function Dashboard() {
                         {/* Sort Order (only for 'all' filter) */}
                         {filterBy === 'all' && (
                             <>
-                                <div className="h-6 w-px bg-zinc-700"></div>
+                                <div className="h-6 w-px bg-gray-300 dark:bg-zinc-700"></div>
                                 <button
                                     onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-zinc-800 text-gray-400 hover:bg-zinc-700 transition-all"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-all"
                                 >
                                     {sortOrder === 'desc' ? (
                                         <>
@@ -500,7 +515,7 @@ export default function Dashboard() {
 
                     {/* Results Count */}
                     {searchQuery && (
-                        <p className="text-sm text-gray-400">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
                             Found {filteredAndSortedLinks.length} result{filteredAndSortedLinks.length !== 1 ? 's' : ''}
                         </p>
                     )}
@@ -519,30 +534,30 @@ export default function Dashboard() {
 
                 {/* Create Link Form */}
                 {showCreateForm && (
-                    <div className="mb-8 bg-zinc-800 border border-zinc-700 rounded-2xl p-6">
+                    <div className="mb-8 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-2xl p-6 transition-colors duration-200">
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-xl font-semibold text-white">Create Short Link</h2>
+                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Create Short Link</h2>
                             <button
                                 onClick={() => {
                                     setShowCreateForm(false);
                                     setFormError('');
                                 }}
-                                className="text-gray-400 hover:text-white transition-colors"
+                                className="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
                             >
                                 ✕
                             </button>
                         </div>
 
                         {formError && (
-                            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-xl flex items-start gap-2">
+                            <div className="mb-4 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/50 rounded-xl flex items-start gap-2">
                                 <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                                <p className="text-red-500 text-sm">{formError}</p>
+                                <p className="text-red-700 dark:text-red-400 text-sm">{formError}</p>
                             </div>
                         )}
 
                         <form onSubmit={handleCreateLink} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Original URL *
                                 </label>
                                 <input
@@ -550,12 +565,12 @@ export default function Dashboard() {
                                     value={formData.originalUrl}
                                     onChange={(e) => setFormData({ ...formData, originalUrl: e.target.value })}
                                     placeholder="https://example.com/very-long-url"
-                                    className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white placeholder-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Custom Alias (optional)
                                 </label>
                                 <input
@@ -563,12 +578,12 @@ export default function Dashboard() {
                                     value={formData.customAlias}
                                     onChange={(e) => setFormData({ ...formData, customAlias: e.target.value })}
                                     placeholder="my-custom-link"
-                                    className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white placeholder-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Title (optional)
                                 </label>
                                 <input
@@ -576,7 +591,7 @@ export default function Dashboard() {
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                     placeholder="My Link"
-                                    className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white placeholder-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
                                 />
                             </div>
 
@@ -601,7 +616,7 @@ export default function Dashboard() {
                                         setShowCreateForm(false);
                                         setFormError('');
                                     }}
-                                    className="px-6 py-3 bg-zinc-700 text-white rounded-xl font-semibold hover:bg-zinc-600 transition-colors"
+                                    className="px-6 py-3 bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors"
                                 >
                                     Cancel
                                 </button>
@@ -611,19 +626,19 @@ export default function Dashboard() {
                 )}
 
                 {/* Select All Checkbox */}
-                {filteredAndSortedLinks.length > 0 && (
+                {filteredAndSortedLinks && filteredAndSortedLinks.length > 0 && (
                     <div className="mb-4 flex items-center gap-3 px-2">
                         <button
                             onClick={toggleSelectAll}
-                            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                         >
-                            {selectedLinks.length === filteredAndSortedLinks.length ? (
+                            {selectedLinks.length === filteredAndSortedLinks.length && filteredAndSortedLinks.length > 0 ? (
                                 <CheckSquare className="w-5 h-5 text-primary-500" />
                             ) : (
                                 <Square className="w-5 h-5" />
                             )}
                             <span className="text-sm">
-                                {selectedLinks.length === filteredAndSortedLinks.length ? 'Deselect All' : 'Select All'}
+                                {selectedLinks.length === filteredAndSortedLinks.length && filteredAndSortedLinks.length > 0 ? 'Deselect All' : 'Select All'}
                             </span>
                         </button>
                     </div>
@@ -636,11 +651,11 @@ export default function Dashboard() {
                     </div>
                 ) : filteredAndSortedLinks.length === 0 ? (
                     <div className="text-center py-20">
-                        <Link2 className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-white mb-2">
+                        <Link2 className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                             {searchQuery || filterBy !== 'all' ? 'No links found' : 'No links yet'}
                         </h3>
-                        <p className="text-gray-400 mb-6">
+                        <p className="text-gray-600 dark:text-gray-400 mb-6">
                             {searchQuery || filterBy !== 'all'
                                 ? 'Try adjusting your search or filters'
                                 : 'Create your first short link to get started'}
@@ -651,7 +666,7 @@ export default function Dashboard() {
                                     setSearchQuery('');
                                     setFilterBy('all');
                                 }}
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-700 text-white rounded-xl font-medium hover:bg-zinc-600 transition-colors"
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors"
                             >
                                 Clear Filters
                             </button>
@@ -662,9 +677,9 @@ export default function Dashboard() {
                         {filteredAndSortedLinks.map((link) => (
                             <div
                                 key={link._id}
-                                className={`bg-zinc-800 border rounded-2xl p-6 transition-all ${selectedLinks.includes(link._id)
-                                    ? 'border-primary-500 bg-primary-500/5'
-                                    : 'border-zinc-700 hover:border-primary-500/50'
+                                className={`bg-white dark:bg-zinc-800 border rounded-2xl p-6 transition-all ${selectedLinks && selectedLinks.includes(link._id)
+                                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/5'
+                                    : 'border-gray-200 dark:border-zinc-700 hover:border-primary-500/50'
                                     }`}
                             >
                                 <div className="flex items-start gap-4">
@@ -673,41 +688,41 @@ export default function Dashboard() {
                                         onClick={() => toggleSelectLink(link._id)}
                                         className="mt-1 flex-shrink-0"
                                     >
-                                        {selectedLinks.includes(link._id) ? (
+                                        {selectedLinks && selectedLinks.includes(link._id) ? (
                                             <CheckSquare className="w-5 h-5 text-primary-500" />
                                         ) : (
-                                            <Square className="w-5 h-5 text-gray-400 hover:text-white transition-colors" />
+                                            <Square className="w-5 h-5 text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors" />
                                         )}
                                     </button>
 
                                     {/* Link Content */}
                                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 flex-1 min-w-0">
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="text-xl font-semibold text-white mb-1 truncate">
+                                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1 truncate">
                                                 {link.title || 'Untitled Link'}
                                             </h3>
-                                            <p className="text-gray-400 text-md mb-2 truncate">
+                                            <p className="text-gray-600 dark:text-gray-400 text-md mb-2 truncate">
                                                 {link.originalUrl}
                                             </p>
                                             <div className="flex items-center gap-2 mb-3">
-                                                <code className="px-3 py-1 bg-zinc-900 text-primary-400 rounded-lg text-md font-mono">
+                                                <code className="px-3 py-1 bg-gray-100 dark:bg-zinc-900 text-primary-400 rounded-lg text-md font-mono">
                                                     {link.shortUrl}
                                                 </code>
                                                 <button
                                                     onClick={() => handleCopy(link.shortUrl, link._id)}
-                                                    className="p-2 hover:bg-zinc-700 rounded-lg transition-colors"
+                                                    className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-lg transition-colors"
                                                     title="Copy to clipboard"
                                                 >
                                                     {copySuccess === link._id ? (
                                                         <CheckCircle className="w-4 h-4 text-green-500" />
                                                     ) : (
-                                                        <Copy className="w-4 h-4 text-gray-400" />
+                                                        <Copy className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                                                     )}
                                                 </button>
                                             </div>
-                                            <div className="flex items-center gap-4 text-md text-gray-400">
-                                                <span>👆 {link.clicks} clicks</span>
-                                                <span>📅 {new Date(link.createdAt).toLocaleDateString()}</span>
+                                            <div className="flex items-center gap-4 text-md text-gray-600 dark:text-gray-400">
+                                                <span className='flex items-center gap-1'><MousePointerClick className="w-4 h-4" /> {link.clicks} clicks</span>
+                                                <span className='flex items-center gap-1'><Calendar className="w-4 h-4" /> {new Date(link.createdAt).toLocaleDateString('en-GB')}</span>
                                             </div>
                                         </div>
 
@@ -722,7 +737,7 @@ export default function Dashboard() {
                                             </button>
                                             <button
                                                 onClick={() => navigate(`/links/${link._id}`)}
-                                                className="flex items-center gap-2 px-4 py-2 bg-zinc-700 text-white rounded-xl hover:bg-zinc-600 transition-colors"
+                                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors"
                                             >
                                                 <BarChart3 className="w-4 h-4" />
                                                 <span className="hidden sm:inline">Analytics</span>
@@ -731,7 +746,7 @@ export default function Dashboard() {
                                                 href={link.shortUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="flex items-center gap-2 px-4 py-2 bg-zinc-700 text-white rounded-xl hover:bg-zinc-600 transition-colors"
+                                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors"
                                             >
                                                 <ExternalLink className="w-4 h-4" />
                                                 <span className="hidden sm:inline">Visit</span>
@@ -742,7 +757,7 @@ export default function Dashboard() {
                                                         deleteLinkMutation.mutate(link._id);
                                                     }
                                                 }}
-                                                className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500/20 transition-colors"
+                                                className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-xl hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                                 <span className="hidden sm:inline">Delete</span>
@@ -759,19 +774,19 @@ export default function Dashboard() {
             {/* QR Code Modal */}
             {showQRModal && selectedLink && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-zinc-800 border border-zinc-700 rounded-2xl p-6 max-w-md w-full">
+                    <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-2xl p-6 max-w-md w-full transition-colors duration-200">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-xl font-semibold text-white">QR Code</h3>
+                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">QR Code</h3>
                             <button
                                 onClick={() => setShowQRModal(false)}
-                                className="text-gray-400 hover:text-white transition-colors"
+                                className="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         <div className="text-center mb-4">
-                            <p className="text-gray-400 text-sm mb-2">{selectedLink.title || 'Untitled Link'}</p>
+                            <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">{selectedLink.title || 'Untitled Link'}</p>
                             <code className="text-primary-400 text-sm">{selectedLink.shortUrl}</code>
                         </div>
 
