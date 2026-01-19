@@ -8,7 +8,9 @@ import {
     Link2, Plus, Copy, ExternalLink, Trash2, BarChart3,
     LogOut, User, AlertCircle, CheckCircle, Loader, QrCode, Download, X,
     TrendingUp, MousePointerClick, Award, Calendar, Search, Filter, SortAsc, SortDesc,
-    CheckSquare, Square, FileDown, Sun, Moon
+    CheckSquare, Square, FileDown, Sun, Moon,
+    AlertTriangle,
+    Clock
 } from 'lucide-react';
 import QRCodeCanvas from 'qrcode';
 
@@ -25,7 +27,8 @@ export default function Dashboard() {
     const [formData, setFormData] = useState({
         originalUrl: '',
         customAlias: '',
-        title: ''
+        title: '',
+        expiresAt: ''
     });
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -37,6 +40,59 @@ export default function Dashboard() {
 
     const [copySuccess, setCopySuccess] = useState(null);
     const [formError, setFormError] = useState('');
+
+    //Get expiration status
+    const getExpirationStatus = (expiresAt) => {
+        if (!expiresAt) return null;
+
+        const now = new Date();
+        const expiryDate = new Date(expiresAt);
+        const daysUntilExpiry = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+
+        if (daysUntilExpiry < 0) {
+            return {
+                status: 'expired',
+                message: 'Expired',
+                color: 'red',
+                icon: AlertTriangle
+            };
+        } else if (daysUntilExpiry === 0) {
+            return {
+                status: 'today',
+                message: 'Expires Today',
+                color: 'red',
+                icon: AlertTriangle
+            };
+        } else if (daysUntilExpiry === 1) {
+            return {
+                status: 'tomorrow',
+                message: 'Expires Tomorrow',
+                color: 'orange',
+                icon: Clock
+            };
+        } else if (daysUntilExpiry <= 7) {
+            return {
+                status: 'soon',
+                message: `Expires in ${daysUntilExpiry} days`,
+                color: 'yellow',
+                icon: Clock
+            };
+        } else if (daysUntilExpiry <= 30) {
+            return {
+                status: 'normal',
+                message: `Expires in ${daysUntilExpiry} days`,
+                color: 'blue',
+                icon: Clock
+            };
+        } else {
+            return {
+                status: 'safe',
+                message: `Expires in ${daysUntilExpiry} days`,
+                color: 'green',
+                icon: CheckCircle
+            }
+        }
+    };
 
     // Fetch dashboard stats
     const { data: dashboardStats, isLoading: statsLoading } = useQuery({
@@ -205,7 +261,14 @@ export default function Dashboard() {
             return;
         }
 
-        createLinkMutation.mutate(formData);
+        const submitData = {
+            originalUrl: formData.originalUrl,
+            customAlias: formData.customAlias || undefined,
+            title: formData.title || undefined,
+            expiresAt: formData.expiresAt ? new Date(formData.expiresAt).toISOString() : undefined
+        };
+
+        createLinkMutation.mutate(submitData);
     }
 
     const handleCopy = async (shortUrl, linkId) => {
@@ -462,8 +525,8 @@ export default function Dashboard() {
                         <button
                             onClick={() => setFilterBy('all')}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterBy === 'all'
-                                ? 'bg-primary-600 text-white'
-                                : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
+                                    ? 'bg-primary-600 text-white'
+                                    : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
                                 }`}
                         >
                             All Links
@@ -472,8 +535,8 @@ export default function Dashboard() {
                         <button
                             onClick={() => setFilterBy('most-clicked')}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterBy === 'most-clicked'
-                                ? 'bg-primary-600 text-white'
-                                : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
+                                    ? 'bg-primary-600 text-white'
+                                    : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
                                 }`}
                         >
                             Most Clicked
@@ -482,8 +545,8 @@ export default function Dashboard() {
                         <button
                             onClick={() => setFilterBy('recent')}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterBy === 'recent'
-                                ? 'bg-primary-600 text-white'
-                                : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
+                                    ? 'bg-primary-600 text-white'
+                                    : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
                                 }`}
                         >
                             Recent (7 days)
@@ -595,6 +658,22 @@ export default function Dashboard() {
                                 />
                             </div>
 
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Expiration Date (optional)
+                                </label>
+                                <input
+                                    type="datetime-local"
+                                    value={formData.expiresAt}
+                                    onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
+                                    min={new Date().toISOString().slice(0, 16)}
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
+                                />
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    Link will stop working after this date/time
+                                </p>
+                            </div>
+
                             <div className="flex gap-3">
                                 <button
                                     type="submit"
@@ -674,99 +753,140 @@ export default function Dashboard() {
                     </div>
                 ) : (
                     <div className="grid gap-4">
-                        {filteredAndSortedLinks.map((link) => (
-                            <div
-                                key={link._id}
-                                className={`bg-white dark:bg-zinc-800 border rounded-2xl p-6 transition-all ${selectedLinks && selectedLinks.includes(link._id)
-                                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/5'
-                                    : 'border-gray-200 dark:border-zinc-700 hover:border-primary-500/50'
-                                    }`}
-                            >
-                                <div className="flex items-start gap-4">
-                                    {/* Checkbox */}
-                                    <button
-                                        onClick={() => toggleSelectLink(link._id)}
-                                        className="mt-1 flex-shrink-0"
-                                    >
-                                        {selectedLinks && selectedLinks.includes(link._id) ? (
-                                            <CheckSquare className="w-5 h-5 text-primary-500" />
-                                        ) : (
-                                            <Square className="w-5 h-5 text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors" />
-                                        )}
-                                    </button>
+                        {filteredAndSortedLinks.map((link) => {
+                            const expStatus = link.expiresAt ? getExpirationStatus(link.expiresAt) : null;
+                            const isExpired = expStatus?.status === 'expired';
 
-                                    {/* Link Content */}
-                                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 flex-1 min-w-0">
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1 truncate">
-                                                {link.title || 'Untitled Link'}
-                                            </h3>
-                                            <p className="text-gray-600 dark:text-gray-400 text-md mb-2 truncate">
-                                                {link.originalUrl}
-                                            </p>
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <code className="px-3 py-1 bg-gray-100 dark:bg-zinc-900 text-primary-400 rounded-lg text-md font-mono">
-                                                    {link.shortUrl}
-                                                </code>
+                            return (
+                                <div
+                                    key={link._id}
+                                    className={`bg-white dark:bg-zinc-800 border rounded-2xl p-6 transition-all ${isExpired
+                                            ? 'opacity-60 border-red-300 dark:border-red-800'
+                                            : selectedLinks && selectedLinks.includes(link._id)
+                                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/5'
+                                                : 'border-gray-200 dark:border-zinc-700 hover:border-primary-500/50'
+                                        }`}
+                                >
+                                    <div className="flex items-start gap-4">
+                                        {/* Checkbox */}
+                                        <button
+                                            onClick={() => toggleSelectLink(link._id)}
+                                            className="mt-1 flex-shrink-0"
+                                        >
+                                            {selectedLinks && selectedLinks.includes(link._id) ? (
+                                                <CheckSquare className="w-5 h-5 text-primary-500" />
+                                            ) : (
+                                                <Square className="w-5 h-5 text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors" />
+                                            )}
+                                        </button>
+
+                                        {/* Link Content */}
+                                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 flex-1 min-w-0">
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1 truncate">
+                                                    {link.title || 'Untitled Link'}
+                                                </h3>
+                                                <p className="text-gray-600 dark:text-gray-400 text-md mb-2 truncate">
+                                                    {link.originalUrl}
+                                                </p>
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <code className="px-3 py-1 bg-gray-100 dark:bg-zinc-900 text-primary-400 rounded-lg text-md font-mono">
+                                                        {link.shortUrl}
+                                                    </code>
+                                                    <button
+                                                        onClick={() => handleCopy(link.shortUrl, link._id)}
+                                                        className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-lg transition-colors"
+                                                        title="Copy to clipboard"
+                                                    >
+                                                        {copySuccess === link._id ? (
+                                                            <CheckCircle className="w-4 h-4 text-green-500" />
+                                                        ) : (
+                                                            <Copy className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                                <div className="flex items-center gap-4 text-md text-gray-600 dark:text-gray-400">
+                                                    <span>👆 {link.clicks} clicks</span>
+                                                    <span>📅 {new Date(link.createdAt).toLocaleDateString()}</span>
+
+                                                    {/* Expiration Badge */}
+                                                    {link.expiresAt && (() => {
+                                                        const expStatus = getExpirationStatus(link.expiresAt);
+                                                        if (!expStatus) return null;
+
+                                                        const Icon = expStatus.icon;
+
+                                                        const colorClasses = {
+                                                            red: 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border-red-200 dark:border-red-500/30',
+                                                            orange: 'bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-500/30',
+                                                            yellow: 'bg-yellow-50 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-500/30',
+                                                            blue: 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/30',
+                                                            green: 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 dark:border-green-500/30'
+                                                        };
+
+                                                        return (
+                                                            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border ${colorClasses[expStatus.color]}`}>
+                                                                <Icon className="w-3 h-3" />
+                                                                {expStatus.message}
+                                                            </span>
+                                                        );
+                                                    })()}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex sm:flex-col gap-2">
                                                 <button
-                                                    onClick={() => handleCopy(link.shortUrl, link._id)}
-                                                    className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-lg transition-colors"
-                                                    title="Copy to clipboard"
+                                                    onClick={() => handleShowQR(link)}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
+                                                    title="QR Code"
                                                 >
-                                                    {copySuccess === link._id ? (
-                                                        <CheckCircle className="w-4 h-4 text-green-500" />
-                                                    ) : (
-                                                        <Copy className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                                                    )}
+                                                    <QrCode className="w-4 h-4" />
+                                                    <span className="hidden sm:inline">QR</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => navigate(`/links/${link._id}`)}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors"
+                                                >
+                                                    <BarChart3 className="w-4 h-4" />
+                                                    <span className="hidden sm:inline">Analytics</span>
+                                                </button>
+                                                {isExpired ? (
+                                                    <button
+                                                        disabled
+                                                        className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-zinc-700 text-gray-400 dark:text-gray-600 rounded-xl cursor-not-allowed"
+                                                        title="Link has expired"
+                                                    >
+                                                        <ExternalLink className="w-4 h-4" />
+                                                        <span className="hidden sm:inline">Expired</span>
+                                                    </button>
+                                                ) : (
+                                                    <a
+                                                        href={link.shortUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors"
+                                                    >
+                                                        <ExternalLink className="w-4 h-4" />
+                                                        <span className="hidden sm:inline">Visit</span>
+                                                    </a>
+                                                )}
+                                                <button
+                                                    onClick={() => {
+                                                        if (confirm('Are you sure you want to delete this link?')) {
+                                                            deleteLinkMutation.mutate(link._id);
+                                                        }
+                                                    }}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-xl hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                    <span className="hidden sm:inline">Delete</span>
                                                 </button>
                                             </div>
-                                            <div className="flex items-center gap-4 text-md text-gray-600 dark:text-gray-400">
-                                                <span className='flex items-center gap-1'><MousePointerClick className="w-4 h-4" /> {link.clicks} clicks</span>
-                                                <span className='flex items-center gap-1'><Calendar className="w-4 h-4" /> {new Date(link.createdAt).toLocaleDateString('en-GB')}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex sm:flex-col gap-2">
-                                            <button
-                                                onClick={() => handleShowQR(link)}
-                                                className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
-                                                title="QR Code"
-                                            >
-                                                <QrCode className="w-4 h-4" />
-                                                <span className="hidden sm:inline">QR</span>
-                                            </button>
-                                            <button
-                                                onClick={() => navigate(`/links/${link._id}`)}
-                                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors"
-                                            >
-                                                <BarChart3 className="w-4 h-4" />
-                                                <span className="hidden sm:inline">Analytics</span>
-                                            </button>
-                                            <a
-                                                href={link.shortUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors"
-                                            >
-                                                <ExternalLink className="w-4 h-4" />
-                                                <span className="hidden sm:inline">Visit</span>
-                                            </a>
-                                            <button
-                                                onClick={() => {
-                                                    if (confirm('Are you sure you want to delete this link?')) {
-                                                        deleteLinkMutation.mutate(link._id);
-                                                    }
-                                                }}
-                                                className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-xl hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                                <span className="hidden sm:inline">Delete</span>
-                                            </button>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
