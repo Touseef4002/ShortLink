@@ -236,7 +236,7 @@ const trackAnalytics = async (linkId, req) => {
                    req.socket.remoteAddress ||
                    req.ip;
 
-        const location = await getLocationFromIP
+        const location = await getLocationFromIP(ip);
         
         const userAgent = req.headers['user-agent'] || '';
         const deviceInfo = parseDeviceInfo(userAgent);

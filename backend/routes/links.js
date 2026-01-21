@@ -1,18 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/auth');
+const {validate} = require('../utils/validation');
 const {createLink, getAllLinks, getLinkById, updateLink, deleteLink} = require('../controllers/linkController');
-const { route } = require('./auth');
 
 router.use(protect);
 
 router.route('/')
-    .post(createLink)
+    .post(validate('createLink'), createLink)
     .get(getAllLinks);
-
+    
 router.route('/:id')    
     .get(getLinkById)
-    .put(updateLink)
+    .put(validate('updateLink'), updateLink)
     .delete(deleteLink);
 
 module.exports = router;
