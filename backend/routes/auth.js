@@ -1,5 +1,5 @@
 const express = require('express');
-const {register, login, getMe} = require('../controllers/authController');
+const {register, login, getMe, verifyEmail, resendVerificationEmail, forgotPassword, resetPassword} = require('../controllers/authController');
 const {protect} = require('../middleware/auth');
 const { validate } = require('../utils/validation');
 const router = express.Router();
@@ -11,7 +11,7 @@ router.get('/me', protect, getMe);
 
 //email verification routes
 router.get('/verify-email/:token', verifyEmail);
-router.post('/resend-verification', resendVerification);
+router.post('/resend-verification', resendVerificationEmail);
 
 //password reset routes
 router.post('/forgot-password', forgotPassword);

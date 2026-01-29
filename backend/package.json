@@ -24,7 +24,8 @@
     "mongoose": "^8.19.3",
     "morgan": "^1.10.1",
     "nanoid": "^5.1.6",
-    "ua-parser-js": "^2.0.6"
+    "ua-parser-js": "^2.0.6",
+    "winston": "^3.19.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

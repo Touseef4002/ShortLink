@@ -1,5 +1,6 @@
 const winston = require('winston');
-const {path} = require('path');
+const path = require('path');
+const fs = require('fs');
 
 // Define log format
 const logFormat = winston.format.combine(
@@ -10,9 +11,6 @@ const logFormat = winston.format.combine(
 );
 
 // create logs directory if it doesn't exist
-const fs = require('fs');
-const { rejects } = require('assert');
-const { time } = require('console');
 const logsDir = path.join(__dirname, '../logs');
 if (!fs.existsSync(logsDir)){
     fs.mkdirSync(logsDir);

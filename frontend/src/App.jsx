@@ -5,6 +5,9 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import LinkDetails from './pages/LinkDetails';
+import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 // import NotFound from './pages/NotFound';
 
 // Protected Route Component
@@ -59,6 +62,11 @@ function AppRoutes() {
         }
       />
 
+      {/* Email Verification & Password Reset Routes */}
+      <Route path="/verify-email/:token" element={<VerifyEmail />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
+
       {/* Protected Routes */}
       <Route
         path="/dashboard"
@@ -78,7 +86,7 @@ function AppRoutes() {
       />
 
       {/* 404 */}
-      {/* <Route path="*" element={<NotFound />} /> */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
