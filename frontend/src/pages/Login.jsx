@@ -15,6 +15,7 @@ export default function Login() {
     });
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
+    const [warning, setWarning] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
@@ -39,7 +40,14 @@ export default function Login() {
         const result = await login(formData);
 
         if (result.success) {
-            navigate('/dashboard');
+            if (result.warning) {
+                setWarning(result.warning);
+                setLoading(false);
+                // Still navigate after a short pause so they can read the warning
+                setTimeout(() => navigate('/dashboard'), 2500);
+            } else {
+                navigate('/dashboard');
+            }
         } else {
             setError(result.message);
             setLoading(false);
@@ -82,6 +90,19 @@ export default function Login() {
                         <div className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/50 rounded-xl flex items-start gap-3 transition-colors duration-200">
                             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                             <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
+                        </div>
+                    )}
+
+                    {/* Warning Message for unverified email */}
+                    {warning && (
+                        <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/50 rounded-xl flex items-start gap-3 transition-colors duration-200">
+                            <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <p className="text-amber-700 dark:text-amber-400 text-sm">{warning}</p>
+                                <p className="text-amber-600 dark:text-amber-500 text-xs mt-1">
+                                    Redirecting to dashboard... Check your inbox to verify.
+                                </p>
+                            </div>
                         </div>
                     )}
 

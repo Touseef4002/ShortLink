@@ -22,6 +22,22 @@ const userSchema = new mongoose.Schema({
         required: [true, "Password is required"],
         minlength: [6, "Password must be at least 6 characters long"],
         select: false
+    },
+    isEmailVerified: {
+        type: Boolean,
+        default: false
+    },
+    emailVerificationToken: {
+        type: String
+    },
+    emailVerificationTokenExpires: {
+        type: Date
+    },
+    passwordResetToken: {
+        type: String
+    },
+    passwordResetExpires: {
+        type: Date
     }
 },{
     timestamps: true
@@ -59,7 +75,7 @@ userSchema.methods.generateEmailVerificationToken = function() {
         .update(verificationToken)
         .digest('hex');
 
-    this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    this.emailVerificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
 
     return verificationToken;
 }

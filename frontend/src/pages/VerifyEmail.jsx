@@ -116,10 +116,10 @@ export default function VerifyEmail() {
                                     Go to Login
                                 </Link>
                                 <Link
-                                    to="/resend-verification"
+                                    to="/login"
                                     className="block w-full px-6 py-3 bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors"
                                 >
-                                    Resend Verification Email
+                                    Back to Login
                                 </Link>
                             </div>
                         </>

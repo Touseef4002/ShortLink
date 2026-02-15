@@ -45,12 +45,12 @@ const schemas = {
                 'any.required': 'URL is required'
             }),
         customAlias: Joi.string()
-            .alphanum()
+            .pattern(/^[a-zA-Z0-9_-]+$/)
             .min(3)
             .max(20)
             .optional()
             .messages({
-                'string.alphanum': 'Alias can only contain letters and numbers',
+                'string.pattern.base': 'Alias can only contain letters, numbers, hyphens, and underscores',
                 'string.min': 'Alias must be at least 3 characters',
                 'string.max': 'Alias cannot exceed 20 characters'
             }),

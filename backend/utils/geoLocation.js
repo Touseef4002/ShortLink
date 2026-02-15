@@ -37,8 +37,8 @@ const parseDeviceInfo = (userAgent) => {
     const result = parser.getResult();
 
     let deviceType = 'Unknown';
-    if(result.device.type) deviceType = result.device.type;
-    else if (result.os.name) deviceType = 'Desktop';
+    if(result.device.type) deviceType = result.device.type.toLowerCase();
+    else if (result.os.name) deviceType = 'desktop';
 
     return{
         device: deviceType,

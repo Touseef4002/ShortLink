@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect, use } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
 
 const ThemeContext = createContext();
 

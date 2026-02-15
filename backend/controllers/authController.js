@@ -95,6 +95,9 @@ const login = async(req,res) => {
 const getMe = async(req, res) => {
     try{
         const user = await User.findById(req.user._id);
+        if(!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
         res.status(200).json({success: true, data: user});
     }
     catch(error){
@@ -147,17 +150,10 @@ const resendVerificationEmail = async(req, res) => {
 
         const user = await User.findOne({email});
 
-        if(!user){
-            return res.status(404).json({
-                success: false, 
-                message: 'User not found'
-            });
-        }
-
-        if(user.isEmailVerified){
-            return res.status(400).json({
-                success: false, 
-                message: 'Email already verified'
+        if(!user || user.isEmailVerified) {
+            return res.status(200).json({
+                success: true,
+                message: 'If that email exists and is unverified, a verification email has been sent.'
             });
         }
 
@@ -168,7 +164,7 @@ const resendVerificationEmail = async(req, res) => {
         
         res.status(200).json({
             success: true,
-            message: 'Verification email resent successfully'
+            message: 'If that email exists and is unverified, a verification email has been sent.'
         });
     }
     catch(error){

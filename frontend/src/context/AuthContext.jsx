@@ -52,6 +52,10 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('user', JSON.stringify(user));
             setUser(user);
 
+            if (response.data.warning) {
+                return { success: true, warning: response.data.warning };
+            }
+
             return { success: true };
         } catch (error) {
             return {

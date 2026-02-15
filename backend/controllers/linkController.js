@@ -176,6 +176,7 @@ const deleteLink = async(req, res) => {
             });
         }
 
+        await Analytics.deleteMany({ linkId: link._id });
         await link.deleteOne();
 
         res.status(200).json({

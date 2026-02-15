@@ -187,8 +187,8 @@ export default function Dashboard() {
         try {
             await Promise.all(selectedLinks.map(id => linksAPI.delete(id)));
 
-            queryClient.invalidateQueries(['links']);
-            queryClient.invalidateQueries(['dashboardStats']);
+            queryClient.invalidateQueries({ queryKey: ['links'] });
+            queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
 
             setSelectedLinks([]);
         }
@@ -232,8 +232,8 @@ export default function Dashboard() {
     const createLinkMutation = useMutation({
         mutationFn: (data) => linksAPI.create(data),
         onSuccess: () => {
-            queryClient.invalidateQueries(['links']);
-            queryClient.invalidateQueries(['dashboardStats']);
+            queryClient.invalidateQueries({ queryKey: ['links'] });
+            queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
             setFormData({ originalUrl: '', customAlias: '', title: '' });
             setShowCreateForm(false);
             setFormError('');
@@ -247,8 +247,8 @@ export default function Dashboard() {
     const deleteLinkMutation = useMutation({
         mutationFn: (id) => linksAPI.delete(id),
         onSuccess: () => {
-            queryClient.invalidateQueries(['links']);
-            queryClient.invalidateQueries(['dashboardStats']);
+            queryClient.invalidateQueries({ queryKey: ['links'] });
+            queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
         }
     });
 
@@ -525,8 +525,8 @@ export default function Dashboard() {
                         <button
                             onClick={() => setFilterBy('all')}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterBy === 'all'
-                                    ? 'bg-primary-600 text-white'
-                                    : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
+                                ? 'bg-primary-600 text-white'
+                                : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
                                 }`}
                         >
                             All Links
@@ -535,8 +535,8 @@ export default function Dashboard() {
                         <button
                             onClick={() => setFilterBy('most-clicked')}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterBy === 'most-clicked'
-                                    ? 'bg-primary-600 text-white'
-                                    : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
+                                ? 'bg-primary-600 text-white'
+                                : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
                                 }`}
                         >
                             Most Clicked
@@ -545,8 +545,8 @@ export default function Dashboard() {
                         <button
                             onClick={() => setFilterBy('recent')}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterBy === 'recent'
-                                    ? 'bg-primary-600 text-white'
-                                    : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
+                                ? 'bg-primary-600 text-white'
+                                : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
                                 }`}
                         >
                             Recent (7 days)
@@ -761,10 +761,10 @@ export default function Dashboard() {
                                 <div
                                     key={link._id}
                                     className={`bg-white dark:bg-zinc-800 border rounded-2xl p-6 transition-all ${isExpired
-                                            ? 'opacity-60 border-red-300 dark:border-red-800'
-                                            : selectedLinks && selectedLinks.includes(link._id)
-                                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/5'
-                                                : 'border-gray-200 dark:border-zinc-700 hover:border-primary-500/50'
+                                        ? 'opacity-60 border-red-300 dark:border-red-800'
+                                        : selectedLinks && selectedLinks.includes(link._id)
+                                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/5'
+                                            : 'border-gray-200 dark:border-zinc-700 hover:border-primary-500/50'
                                         }`}
                                 >
                                     <div className="flex items-start gap-4">

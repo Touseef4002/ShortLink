@@ -84,7 +84,7 @@ const sendVerificationEmail = async (email, verificationToken, username) => {
                             <h1>🔗 Welcome to ShortLink!</h1>
                         </div>
                         <div class="content">
-                            <p>Hi ${userName},</p>
+                            <p>Hi ${username},</p>
                             <p>Thanks for signing up! Please verify your email address to activate your account.</p>
                             <p style="text-align: center;">
                                 <a href="${verificationUrl}" class="button">Verify Email Address</a>
@@ -185,7 +185,7 @@ const sendPasswordResetEmail = async (email, resetToken, username) => {
                             <h1>🔐 Password Reset</h1>
                         </div>
                         <div class="content">
-                            <p>Hi ${userName},</p>
+                            <p>Hi ${username},</p>
                             <p>We received a request to reset your password for your ShortLink account.</p>
                             <p style="text-align: center;">
                                 <a href="${resetUrl}" class="button">Reset Password</a>
