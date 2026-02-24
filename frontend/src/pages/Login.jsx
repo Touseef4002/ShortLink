@@ -1,220 +1,94 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { Link2, Mail, Lock, Eye, EyeOff, AlertCircle, Moon, Sun } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import { Link2, Eye, EyeOff, AlertCircle, Loader, Moon, Sun, Mail, Lock } from 'lucide-react';
 
 export default function Login() {
-    const navigate = useNavigate();
     const { login } = useAuth();
     const { toggleTheme, isDark } = useTheme();
+    const navigate = useNavigate();
 
-    const [formData, setFormData] = useState({
-        email: '',
-        password: ''
-    });
+    const [formData, setFormData] = useState({ email: '', password: '' });
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
-    const [warning, setWarning] = useState('');
-    const [loading, setLoading] = useState(false);
-
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-        setError('');
-    };
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        setLoading(true);
-
-        if (!formData.email || !formData.password) {
-            setError('Please fill in all fields');
-            setLoading(false);
-            return;
-        }
-
+        setIsLoading(true);
         const result = await login(formData);
-
+        setIsLoading(false);
         if (result.success) {
-            if (result.warning) {
-                setWarning(result.warning);
-                setLoading(false);
-                // Still navigate after a short pause so they can read the warning
-                setTimeout(() => navigate('/dashboard'), 2500);
-            } else {
-                navigate('/dashboard');
-            }
+            navigate('/dashboard');
         } else {
-            setError(result.message);
-            setLoading(false);
+            setError(result.message || 'Login failed. Please try again.');
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 flex items-center justify-center px-4 transition-colors duration-200">
-            {/* Theme Toggle - Fixed Position */}
-            <button
-                onClick={toggleTheme}
-                className="fixed top-4 right-4 p-2 rounded-lg bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors shadow-lg"
-                title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-                {isDark ? (
-                    <Sun className="w-5 h-5" />
-                ) : (
-                    <Moon className="w-5 h-5" />
-                )}
-            </button>
+        <div className="min-h-screen bg-pg dark:bg-dk flex flex-col transition-colors">
+            <header className="flex items-center justify-between px-6 h-16 border-b border-ln dark:border-dk-ln">
+                <Link to="/" className="flex items-center gap-2">
+                    <div className="w-7 h-7 bg-ink dark:bg-dk-text rounded-lg flex items-center justify-center">
+                        <Link2 className="w-3.5 h-3.5 text-ink-inverse dark:text-dk" />
+                    </div>
+                    <span className="text-lg font-display italic text-ink dark:text-dk-text">ShortLink</span>
+                </Link>
+                <button onClick={toggleTheme} className="p-2 rounded-lg text-ink-secondary dark:text-dk-secondary hover:bg-pg-elevated dark:hover:bg-dk-elevated transition-colors">
+                    {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                </button>
+            </header>
 
-            <div className="w-full max-w-md">
-                {/* Logo */}
-                <div className="text-center mb-8">
-                    <Link to="/" className="inline-flex items-center gap-2 mb-2">
-                        <Link2 className="w-10 h-10 text-primary-500" />
-                        <span className="text-3xl font-bold text-gray-900 dark:text-white">ShortLink</span>
-                    </Link>
-                    <p className="text-gray-600 dark:text-gray-400 transition-colors duration-200">
-                        Welcome back! Please login to your account.
-                    </p>
-                </div>
-
-                {/* Login Card */}
-                <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-2xl p-8 shadow-xl transition-colors duration-200">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Login</h2>
-
-                    {/* Error Message */}
-                    {error && (
-                        <div className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/50 rounded-xl flex items-start gap-3 transition-colors duration-200">
-                            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                            <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
-                        </div>
-                    )}
-
-                    {/* Warning Message for unverified email */}
-                    {warning && (
-                        <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/50 rounded-xl flex items-start gap-3 transition-colors duration-200">
-                            <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                            <div>
-                                <p className="text-amber-700 dark:text-amber-400 text-sm">{warning}</p>
-                                <p className="text-amber-600 dark:text-amber-500 text-xs mt-1">
-                                    Redirecting to dashboard... Check your inbox to verify.
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        {/* Email Field */}
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
-                                Email Address
-                            </label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    placeholder="you@example.com"
-                                    className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
-                                    disabled={loading}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Password Field */}
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
-                                Password
-                            </label>
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    id="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    placeholder="••••••••"
-                                    className="w-full pl-11 pr-12 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
-                                    disabled={loading}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                                    tabIndex={-1}
-                                >
-                                    {showPassword ? (
-                                        <EyeOff className="w-5 h-5" />
-                                    ) : (
-                                        <Eye className="w-5 h-5" />
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Forgot Password Link */}
-                        <div className="flex justify-end">
-                            <Link
-                                to="/forgot-password"
-                                className="text-sm text-primary-500 hover:text-primary-400 transition-colors"
-                            >
-                                Forgot password?
-                            </Link>
-                        </div>
-
-                        {/* Submit Button */}
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full py-3 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 focus:ring-4 focus:ring-primary-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
-                        >
-                            {loading ? (
-                                <span className="flex items-center justify-center gap-2">
-                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                    Logging in...
-                                </span>
-                            ) : (
-                                'Login'
-                            )}
-                        </button>
-                    </form>
-
-                    {/* Divider */}
-                    <div className="relative my-6">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-gray-200 dark:border-zinc-700"></div>
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                            <span className="px-4 bg-white dark:bg-zinc-800 text-gray-500 dark:text-gray-400">
-                                Don't have an account?
-                            </span>
-                        </div>
+            <main className="flex-1 flex items-center justify-center px-6 py-12">
+                <div className="w-full max-w-sm">
+                    <div className="text-center mb-8">
+                        <h1 className="font-display text-h3 italic text-ink dark:text-dk-text">Welcome back</h1>
+                        <p className="mt-2 text-base text-ink-secondary dark:text-dk-secondary">Sign in to your account</p>
                     </div>
 
-                    {/* Register Link */}
-                    <Link
-                        to="/register"
-                        className="block w-full py-3 bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white text-center rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-zinc-600 transition-all duration-200"
-                    >
-                        Create Account
-                    </Link>
-                </div>
+                    <div className="card !p-6">
+                        {error && (
+                            <div className="mb-5 p-3 bg-accent-light dark:bg-accent/10 border border-accent/20 rounded-btn flex items-start gap-2">
+                                <AlertCircle className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                                <p className="text-sm text-accent dark:text-red-400">{error}</p>
+                            </div>
+                        )}
 
-                {/* Back to Home */}
-                <div className="text-center mt-6">
-                    <Link to="/" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                        ← Back to Home
-                    </Link>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-ink dark:text-dk-text mb-1.5">Email</label>
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted dark:text-dk-muted" />
+                                    <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="you@example.com" className="input-field !pl-10" required />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-ink dark:text-dk-text mb-1.5">Password</label>
+                                <div className="relative">
+                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted dark:text-dk-muted" />
+                                    <input type={showPassword ? 'text' : 'password'} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} placeholder="••••••••" className="input-field !pl-10 !pr-10" required />
+                                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted dark:text-dk-muted hover:text-ink dark:hover:text-dk-text transition-colors">
+                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="flex justify-end">
+                                <Link to="/forgot-password" className="text-sm text-ink-secondary dark:text-dk-secondary hover:text-ink dark:hover:text-dk-text transition-colors">Forgot password?</Link>
+                            </div>
+                            <button type="submit" disabled={isLoading} className="w-full btn-primary !py-2.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                                {isLoading ? <span className="flex items-center justify-center gap-2"><Loader className="w-4 h-4 animate-spin" />Signing in…</span> : 'Sign In'}
+                            </button>
+                        </form>
+                    </div>
+
+                    <p className="text-center text-sm text-ink-secondary dark:text-dk-secondary mt-5">
+                        Don't have an account?{' '}
+                        <Link to="/register" className="text-ink dark:text-dk-text font-medium hover:underline">Sign up</Link>
+                    </p>
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

@@ -1,138 +1,77 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { Link2, CheckCircle, XCircle, Loader, Sun, Moon } from 'lucide-react';
-import api from '../services/api';
+import { Link2, AlertCircle, CheckCircle, Loader, Moon, Sun } from 'lucide-react';
+import { authAPI } from '../services/api';
 
 export default function VerifyEmail() {
     const { token } = useParams();
     const navigate = useNavigate();
-
     const { toggleTheme, isDark } = useTheme();
     const [status, setStatus] = useState('verifying');
-    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
 
     useEffect(() => {
-        const verifyEmail = async () => {
+        const verify = async () => {
             try {
-                const response = await api.get(`/api/auth/verify-email/${token}`);
-
-                if (response.data.success) {
-                    setStatus('success');
-                    setMessage(response.data.message);
-
-                    setTimeout(() => {
-                        navigate('/dashboard');
-                    }, 3000);
-                } else {
-                    setStatus('error');
-                    setMessage(response.data.message);
-                }
-            }
-            catch (error) {
+                await authAPI.verifyEmail(token);
+                setStatus('success');
+                setTimeout(() => navigate('/dashboard'), 3000);
+            } catch (err) {
                 setStatus('error');
-                setMessage(error.response?.data?.message || 'Verification failed.');
+                setError(err.response?.data?.message || 'Email verification failed');
             }
-        }
-
-        if (token) verifyEmail();
+        };
+        if (token) verify();
     }, [token, navigate]);
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 flex items-center justify-center px-4 transition-colors duration-200">
-            {/* Theme Toggle */}
-            <button
-                onClick={toggleTheme}
-                className="fixed top-4 right-4 p-2 rounded-lg bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors shadow-lg"
-                title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
+        <div className="min-h-screen bg-pg dark:bg-dk flex flex-col transition-colors">
+            <header className="flex items-center justify-between px-6 h-16 border-b border-ln dark:border-dk-ln">
+                <Link to="/" className="flex items-center gap-2">
+                    <div className="w-7 h-7 bg-ink dark:bg-dk-text rounded-lg flex items-center justify-center">
+                        <Link2 className="w-3.5 h-3.5 text-ink-inverse dark:text-dk" />
+                    </div>
+                    <span className="text-lg font-display italic text-ink dark:text-dk-text">ShortLink</span>
+                </Link>
+                <button onClick={toggleTheme} className="p-2 rounded-lg text-ink-secondary dark:text-dk-secondary hover:bg-pg-elevated dark:hover:bg-dk-elevated transition-colors">
+                    {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                </button>
+            </header>
 
-            <div className="w-full max-w-md">
-                {/* Logo */}
-                <div className="text-center mb-8">
-                    <Link to="/" className="inline-flex items-center gap-2 mb-2">
-                        <Link2 className="w-10 h-10 text-primary-500" />
-                        <span className="text-3xl font-bold text-gray-900 dark:text-white">ShortLink</span>
-                    </Link>
+            <main className="flex-1 flex items-center justify-center px-6 py-12">
+                <div className="w-full max-w-sm">
+                    <div className="card !p-8 text-center">
+                        {status === 'verifying' && (
+                            <>
+                                <Loader className="w-8 h-8 text-ink-muted dark:text-dk-muted animate-spin mx-auto mb-4" />
+                                <h2 className="font-display text-xl italic text-ink dark:text-dk-text mb-1">Verifying your email</h2>
+                                <p className="text-sm text-ink-secondary dark:text-dk-secondary">Please wait…</p>
+                            </>
+                        )}
+                        {status === 'success' && (
+                            <>
+                                <div className="w-12 h-12 bg-green-50 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                                </div>
+                                <h2 className="font-display text-xl italic text-ink dark:text-dk-text mb-1">Email verified</h2>
+                                <p className="text-sm text-ink-secondary dark:text-dk-secondary mb-5">Redirecting to dashboard…</p>
+                                <Link to="/dashboard" className="btn-primary text-sm">Go to Dashboard</Link>
+                            </>
+                        )}
+                        {status === 'error' && (
+                            <>
+                                <div className="w-12 h-12 bg-accent-light dark:bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <AlertCircle className="w-6 h-6 text-accent" />
+                                </div>
+                                <h2 className="font-display text-xl italic text-ink dark:text-dk-text mb-1">Verification failed</h2>
+                                <p className="text-sm text-ink-secondary dark:text-dk-secondary mb-5">{error}</p>
+                                <Link to="/login" className="btn-primary text-sm">Go to Login</Link>
+                            </>
+                        )}
+                    </div>
                 </div>
-
-                {/* Verification Card */}
-                <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-2xl p-8 shadow-xl text-center transition-colors duration-200">
-                    {status === 'verifying' && (
-                        <>
-                            <div className="w-16 h-16 bg-primary-100 dark:bg-primary-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Loader className="w-8 h-8 text-primary-600 animate-spin" />
-                            </div>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                                Verifying Your Email
-                            </h2>
-                            <p className="text-gray-600 dark:text-gray-400">
-                                Please wait while we verify your email address...
-                            </p>
-                        </>
-                    )}
-
-                    {status === 'success' && (
-                        <>
-                            <div className="w-16 h-16 bg-green-100 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <CheckCircle className="w-8 h-8 text-green-600" />
-                            </div>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                                Email Verified!
-                            </h2>
-                            <p className="text-gray-600 dark:text-gray-400 mb-6">
-                                {message}
-                            </p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Redirecting to dashboard in 3 seconds...
-                            </p>
-                            <Link
-                                to="/dashboard"
-                                className="inline-block mt-4 px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
-                            >
-                                Go to Dashboard Now
-                            </Link>
-                        </>
-                    )}
-
-                    {status === 'error' && (
-                        <>
-                            <div className="w-16 h-16 bg-red-100 dark:bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <XCircle className="w-8 h-8 text-red-600" />
-                            </div>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                                Verification Failed
-                            </h2>
-                            <p className="text-gray-600 dark:text-gray-400 mb-6">
-                                {message}
-                            </p>
-                            <div className="space-y-3">
-                                <Link
-                                    to="/login"
-                                    className="block w-full px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
-                                >
-                                    Go to Login
-                                </Link>
-                                <Link
-                                    to="/login"
-                                    className="block w-full px-6 py-3 bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors"
-                                >
-                                    Back to Login
-                                </Link>
-                            </div>
-                        </>
-                    )}
-                </div>
-
-                {/* Back to Home */}
-                <div className="text-center mt-6">
-                    <Link to="/" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                        ← Back to Home
-                    </Link>
-                </div>
-            </div>
+            </main>
         </div>
     );
 }

@@ -1,156 +1,92 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { Link2, Mail, ArrowLeft, CheckCircle, AlertCircle, Sun, Moon } from 'lucide-react';
-import api from '../services/api';
+import { Link2, AlertCircle, CheckCircle, Loader, Moon, Sun, Mail, ArrowLeft } from 'lucide-react';
+import { authAPI } from '../services/api';
 
 export default function ForgotPassword() {
     const { toggleTheme, isDark } = useTheme();
     const [email, setEmail] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [status, setStatus] = useState(null); // null, success, error
-    const [message, setMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
-        setStatus(null);
-
-        if (!email) {
-            setStatus('error');
-            setMessage('Please enter your email address');
-            setLoading(false);
-            return;
-        }
-
+        setError('');
+        setIsLoading(true);
         try {
-            const response = await api.post('/api/auth/forgot-password', { email });
-
-            setStatus('success');
-            setMessage(response.data.message);
-            setEmail('');
-        } catch (error) {
-            setStatus('error');
-            setMessage(error.response?.data?.message || 'Failed to send reset email');
+            await authAPI.forgotPassword(email);
+            setSuccess(true);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to send reset link');
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 flex items-center justify-center px-4 transition-colors duration-200">
-            {/* Theme Toggle */}
-            <button
-                onClick={toggleTheme}
-                className="fixed top-4 right-4 p-2 rounded-lg bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors shadow-lg"
-                title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
-
-            <div className="w-full max-w-md">
-                {/* Logo */}
-                <div className="text-center mb-8">
-                    <Link to="/" className="inline-flex items-center gap-2 mb-2">
-                        <Link2 className="w-10 h-10 text-primary-500" />
-                        <span className="text-3xl font-bold text-gray-900 dark:text-white">ShortLink</span>
-                    </Link>
-                    <p className="text-gray-600 dark:text-gray-400 transition-colors duration-200">
-                        Reset your password
-                    </p>
-                </div>
-
-                {/* Card */}
-                <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-2xl p-8 shadow-xl transition-colors duration-200">
-                    <Link
-                        to="/login"
-                        className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to Login
-                    </Link>
-
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                        Forgot Password?
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6">
-                        Enter your email and we'll send you a link to reset your password.
-                    </p>
-
-                    {/* Success Message */}
-                    {status === 'success' && (
-                        <div className="mb-6 p-4 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30 rounded-xl flex items-start gap-3 transition-colors duration-200">
-                            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                            <div>
-                                <p className="text-green-700 dark:text-green-400 text-sm font-medium">
-                                    {message}
-                                </p>
-                                <p className="text-green-600 dark:text-green-500 text-xs mt-1">
-                                    Check your email inbox and spam folder.
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Error Message */}
-                    {status === 'error' && (
-                        <div className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl flex items-start gap-3 transition-colors duration-200">
-                            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                            <p className="text-red-700 dark:text-red-400 text-sm">{message}</p>
-                        </div>
-                    )}
-
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
-                                Email Address
-                            </label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                                <input
-                                    type="email"
-                                    id="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="you@example.com"
-                                    className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
-                                    disabled={loading}
-                                />
-                            </div>
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full py-3 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 focus:ring-4 focus:ring-primary-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
-                        >
-                            {loading ? (
-                                <span className="flex items-center justify-center gap-2">
-                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                    Sending...
-                                </span>
-                            ) : (
-                                'Send Reset Link'
-                            )}
-                        </button>
-                    </form>
-
-                    {/* Info */}
-                    <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-xl">
-                        <p className="text-blue-700 dark:text-blue-400 text-sm">
-                            💡 <strong>Tip:</strong> The reset link will expire in 1 hour for security.
-                        </p>
+        <div className="min-h-screen bg-pg dark:bg-dk flex flex-col transition-colors">
+            <header className="flex items-center justify-between px-6 h-16 border-b border-ln dark:border-dk-ln">
+                <Link to="/" className="flex items-center gap-2">
+                    <div className="w-7 h-7 bg-ink dark:bg-dk-text rounded-lg flex items-center justify-center">
+                        <Link2 className="w-3.5 h-3.5 text-ink-inverse dark:text-dk" />
                     </div>
-                </div>
+                    <span className="text-lg font-display italic text-ink dark:text-dk-text">ShortLink</span>
+                </Link>
+                <button onClick={toggleTheme} className="p-2 rounded-lg text-ink-secondary dark:text-dk-secondary hover:bg-pg-elevated dark:hover:bg-dk-elevated transition-colors">
+                    {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                </button>
+            </header>
 
-                {/* Back to Home */}
-                <div className="text-center mt-6">
-                    <Link to="/" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                        ← Back to Home
-                    </Link>
+            <main className="flex-1 flex items-center justify-center px-6 py-12">
+                <div className="w-full max-w-sm">
+                    <div className="text-center mb-8">
+                        <h1 className="font-display text-h3 italic text-ink dark:text-dk-text">Reset password</h1>
+                        <p className="mt-2 text-base text-ink-secondary dark:text-dk-secondary">We'll send you a reset link</p>
+                    </div>
+
+                    <div className="card !p-6">
+                        {success ? (
+                            <div className="text-center py-4">
+                                <div className="w-12 h-12 bg-green-50 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                                </div>
+                                <h3 className="text-sm font-semibold text-ink dark:text-dk-text mb-1 font-sans">Check your email</h3>
+                                <p className="text-sm text-ink-secondary dark:text-dk-secondary mb-5">
+                                    Reset link sent to <strong className="text-ink dark:text-dk-text">{email}</strong>
+                                </p>
+                                <Link to="/login" className="btn-primary text-sm"><ArrowLeft className="w-3.5 h-3.5" />Back to login</Link>
+                            </div>
+                        ) : (
+                            <>
+                                {error && (
+                                    <div className="mb-5 p-3 bg-accent-light dark:bg-accent/10 border border-accent/20 rounded-btn flex items-start gap-2">
+                                        <AlertCircle className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                                        <p className="text-sm text-accent dark:text-red-400">{error}</p>
+                                    </div>
+                                )}
+                                <form onSubmit={handleSubmit} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-ink dark:text-dk-text mb-1.5">Email</label>
+                                        <div className="relative">
+                                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted dark:text-dk-muted" />
+                                            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="input-field !pl-10" required />
+                                        </div>
+                                    </div>
+                                    <button type="submit" disabled={isLoading} className="w-full btn-primary !py-2.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        {isLoading ? <span className="flex items-center justify-center gap-2"><Loader className="w-4 h-4 animate-spin" />Sending…</span> : 'Send Reset Link'}
+                                    </button>
+                                </form>
+                            </>
+                        )}
+                    </div>
+
+                    <p className="text-center text-sm text-ink-secondary dark:text-dk-secondary mt-5">
+                        <Link to="/login" className="text-ink dark:text-dk-text font-medium hover:underline inline-flex items-center gap-1"><ArrowLeft className="w-3 h-3" />Back to login</Link>
+                    </p>
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

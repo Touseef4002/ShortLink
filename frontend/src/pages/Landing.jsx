@@ -1,187 +1,169 @@
 import { useTheme } from '../context/ThemeContext';
 import { Link } from 'react-router-dom';
-import { Link2, BarChart3, Shield, Zap, Moon, Sun } from 'lucide-react';
-import DotGrid from '../components/DotGrid';
+import { Link2, BarChart3, Shield, Zap, Moon, Sun, ArrowRight, MousePointerClick, Globe } from 'lucide-react';
 
 export default function Landing() {
-    const { theme, toggleTheme, isDark } = useTheme();
+    const { toggleTheme, isDark } = useTheme();
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 transition-colors duration-200">
-            {/* Hero Section with DotGrid Background */}
-            <div className="relative overflow-hidden bg-gray-50 dark:bg-zinc-900 transition-colors duration-200">
-                {/* Animated Dot Grid Background */}
-                <DotGrid
-                    dotSize={2.5}
-                    gap={30}
-                    baseColor={isDark ? '#3f3f46' : '#d1d5db'}
-                    activeColor="#9333ea"
-                    proximity={120}
-                    shockRadius={200}
-                    shockStrength={3}
-                />
-
-                {/* Navbar */}
-                <nav className="relative container mx-auto px-4 py-6 border-b border-gray-200 dark:border-zinc-800 transition-colors duration-200">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Link2 className="w-8 h-8 text-primary-500" />
-                            <span className="text-2xl font-bold text-gray-900 dark:text-white">ShortLink</span>
+        <div className="min-h-screen bg-pg dark:bg-dk transition-colors duration-200">
+            {/* ── Navbar ── */}
+            <nav className="sticky top-0 z-30 bg-pg/80 dark:bg-dk/80 backdrop-blur-md border-b border-ln dark:border-dk-ln transition-colors">
+                <div className="max-w-container mx-auto px-6 h-16 flex items-center justify-between">
+                    <Link to="/" className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-ink dark:bg-dk-text rounded-lg flex items-center justify-center">
+                            <Link2 className="w-4 h-4 text-ink-inverse dark:text-dk" />
                         </div>
-                        <div className="flex items-center gap-4">
-                            {/* Theme Toggle Button */}
-                            <button
-                                onClick={toggleTheme}
-                                className="p-2 rounded-lg bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-zinc-700 transition-colors"
-                                title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-                            >
-                                {isDark ? (
-                                    <Sun className="w-5 h-5" />
-                                ) : (
-                                    <Moon className="w-5 h-5" />
-                                )}
-                            </button>
-
-                            <Link
-                                to="/login"
-                                className="px-6 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium transition-colors"
-                            >
-                                Login
-                            </Link>
-                            <Link
-                                to="/register"
-                                className="px-6 py-2 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-all duration-200 shadow-lg hover:shadow-xl"
-                            >
-                                Get Started
-                            </Link>
-                        </div>
+                        <span className="text-lg font-display italic text-ink dark:text-dk-text">ShortLink</span>
+                    </Link>
+                    <div className="flex items-center gap-2">
+                        <button onClick={toggleTheme} className="p-2 rounded-lg text-ink-secondary dark:text-dk-secondary hover:bg-pg-elevated dark:hover:bg-dk-elevated transition-colors" title={isDark ? 'Light mode' : 'Dark mode'}>
+                            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                        </button>
+                        <Link to="/login" className="px-4 py-2 text-sm text-ink-secondary dark:text-dk-secondary hover:text-ink dark:hover:text-dk-text font-medium transition-colors">Log In</Link>
+                        <Link to="/register" className="btn-primary text-sm">Get Started</Link>
                     </div>
-                </nav>
+                </div>
+            </nav>
 
-                {/* Hero Content */}
-                <div className="relative container mx-auto px-4 py-20 md:py-32">
-                    <div className="text-center max-w-4xl mx-auto">
-                        <h1 className="text-5xl md:text-6xl font-extrabold mb-6 animate-fade-in text-gray-900 dark:text-white transition-colors duration-200">
-                            Shorten Your Links
+            {/* ── Hero ── */}
+            <section className="relative overflow-hidden">
+                <div className="absolute inset-0 opacity-[0.35] dark:opacity-[0.15]" style={{
+                    backgroundImage: 'radial-gradient(circle, #C0C0BB 1px, transparent 1px)',
+                    backgroundSize: '28px 28px'
+                }} />
+                <div className="relative max-w-container mx-auto px-6 pt-24 pb-20 md:pt-36 md:pb-28">
+                    <div className="max-w-2xl mx-auto text-center">
+                        <h1 className="font-display text-display text-ink dark:text-dk-text animate-fade-in">
+                            <span className="italic">Shorten.</span>{' '}
+                            <span className="italic">Track.</span>
                             <br />
-                            <span className="text-primary-500">Track Every Click</span>
+                            <span className="not-italic">Optimize.</span>
                         </h1>
-                        <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 animate-slide-up transition-colors duration-200">
-                            Create beautiful short links with powerful analytics.
-                            Know who clicks, when, and from where.
+                        <p className="mt-6 text-lg text-ink-secondary dark:text-dk-secondary max-w-md mx-auto leading-relaxed animate-slide-up">
+                            ShortLink brings powerful analytics to every link you share. Know who clicks, when, and from where.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-scale-in">
-                            <Link
-                                to="/register"
-                                className="px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold text-lg hover:bg-primary-700 transition-all duration-200 shadow-lg hover:shadow-xl"
-                            >
-                                Start for Free
+                        <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center animate-scale-in">
+                            <Link to="/register" className="btn-primary !px-6 !py-3 text-base">
+                                <span className="w-5 h-5 bg-accent rounded flex items-center justify-center flex-shrink-0">
+                                    <ArrowRight className="w-3 h-3 text-white" />
+                                </span>
+                                Get Started Free
                             </Link>
-                            <Link
-                                to="/login"
-                                className="px-8 py-4 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white rounded-xl font-semibold text-lg border border-gray-300 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-all duration-200 shadow-lg hover:shadow-xl"
-                            >
-                                Sign In
+                            <Link to="/login" className="btn-secondary !px-6 !py-3 text-base">Sign In</Link>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ── Stats Strip ── */}
+            <section className="border-y border-ln dark:border-dk-ln bg-pg-card dark:bg-dk-card transition-colors">
+                <div className="max-w-container mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+                    {[
+                        { value: '10K+', label: 'Links Created' },
+                        { value: '99.9%', label: 'Uptime' },
+                        { value: '<50ms', label: 'Avg. Redirect' },
+                        { value: '100%', label: 'Free Forever' },
+                    ].map(s => (
+                        <div key={s.label} className="text-center">
+                            <p className="font-display text-3xl italic text-ink dark:text-dk-text">{s.value}</p>
+                            <p className="mt-1 text-xs uppercase tracking-widest text-ink-muted dark:text-dk-muted">{s.label}</p>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* ── Features ── */}
+            <section className="bg-pg dark:bg-dk transition-colors">
+                <div className="max-w-container mx-auto px-6 py-24">
+                    <div className="text-center mb-14">
+                        <h2 className="font-display text-h2 italic text-ink dark:text-dk-text">Everything you need</h2>
+                        <p className="mt-3 text-base text-ink-secondary dark:text-dk-secondary max-w-md mx-auto">
+                            Powerful features to manage, track, and optimize every link.
+                        </p>
+                    </div>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {[
+                            { icon: Link2, title: 'Custom Links', desc: 'Create branded short links with custom aliases for better recognition.' },
+                            { icon: BarChart3, title: 'Detailed Analytics', desc: 'Track clicks, locations, devices, and referrers in real-time.' },
+                            { icon: Shield, title: 'Secure & Private', desc: 'Your data is encrypted and secure. We respect your privacy.' },
+                            { icon: Zap, title: 'Lightning Fast', desc: 'Blazing fast redirects with 99.9% uptime guaranteed.' },
+                        ].map(f => (
+                            <div key={f.title} className="card card-hover group">
+                                <div className="w-9 h-9 bg-ink dark:bg-dk-text rounded-lg flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                                    <f.icon className="w-4 h-4 text-ink-inverse dark:text-dk" />
+                                </div>
+                                <h3 className="text-sm font-semibold text-ink dark:text-dk-text font-sans mb-1">{f.title}</h3>
+                                <p className="text-sm text-ink-secondary dark:text-dk-secondary leading-relaxed">{f.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* ── Product Highlight ── */}
+            <section className="border-y border-ln dark:border-dk-ln bg-pg-card dark:bg-dk-card transition-colors">
+                <div className="max-w-container mx-auto px-6 py-24">
+                    <div className="grid lg:grid-cols-2 gap-16 items-center">
+                        <div>
+                            <h2 className="font-display text-h1 text-ink dark:text-dk-text">
+                                <span className="italic">Track every click</span>{' '}
+                                down to the device
+                            </h2>
+                            <p className="mt-5 text-base text-ink-secondary dark:text-dk-secondary leading-relaxed max-w-md">
+                                Get detailed breakdowns by country, device, browser, and referrer. See when your links are most active and optimize your sharing strategy.
+                            </p>
+                            <Link to="/register" className="btn-primary mt-8">
+                                <span className="w-5 h-5 bg-accent rounded flex items-center justify-center flex-shrink-0">
+                                    <BarChart3 className="w-3 h-3 text-white" />
+                                </span>
+                                Start Tracking
                             </Link>
                         </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            {[
+                                { icon: MousePointerClick, label: 'Click Tracking', value: 'Real-time' },
+                                { icon: Globe, label: 'Geo Analytics', value: '195 countries' },
+                                { icon: BarChart3, label: 'Referrer Data', value: 'All sources' },
+                                { icon: Shield, label: 'QR Codes', value: 'Instant gen' },
+                            ].map(c => (
+                                <div key={c.label} className="card text-center">
+                                    <c.icon className="w-5 h-5 text-accent mx-auto mb-2" />
+                                    <p className="font-display text-lg italic text-ink dark:text-dk-text">{c.value}</p>
+                                    <p className="mt-0.5 text-xs text-ink-muted dark:text-dk-muted uppercase tracking-wider">{c.label}</p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            {/* Features Section */}
-            <div className="relative container mx-auto px-4 py-20">
-                {/* Dot Grid Background for Features */}
-                <div className="absolute inset-0 -mx-4">
-                    <DotGrid
-                        dotSize={2}
-                        gap={30}
-                        baseColor={isDark ? '#3f3f46' : '#d1d5db'}
-                        activeColor="#9333ea"
-                        proximity={100}
-                        shockRadius={150}
-                        shockStrength={2}
-                    />
-                </div>
-
-                <h2 className="relative text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900 dark:text-white transition-colors duration-200">
-                    Why Choose <span className="text-primary-500">ShortLink</span>?
-                </h2>
-
-                <div className="relative grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {/* Feature 1 */}
-                    <div className="bg-white dark:bg-zinc-800 rounded-2xl p-6 border border-gray-200 dark:border-zinc-700 hover:border-primary-600 dark:hover:border-primary-600 transition-all duration-300 shadow-lg hover:shadow-xl">
-                        <div className="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
-                            <Link2 className="w-6 h-6 text-primary-500" />
-                        </div>
-                        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Custom Links</h3>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Create branded short links with custom aliases for better recognition.
-                        </p>
-                    </div>
-
-                    {/* Feature 2 */}
-                    <div className="bg-white dark:bg-zinc-800 rounded-2xl p-6 border border-gray-200 dark:border-zinc-700 hover:border-primary-600 dark:hover:border-primary-600 transition-all duration-300 shadow-lg hover:shadow-xl">
-                        <div className="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
-                            <BarChart3 className="w-6 h-6 text-primary-500" />
-                        </div>
-                        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Detailed Analytics</h3>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Track clicks, locations, devices, and referrers in real-time.
-                        </p>
-                    </div>
-
-                    {/* Feature 3 */}
-                    <div className="bg-white dark:bg-zinc-800 rounded-2xl p-6 border border-gray-200 dark:border-zinc-700 hover:border-primary-600 dark:hover:border-primary-600 transition-all duration-300 shadow-lg hover:shadow-xl">
-                        <div className="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
-                            <Shield className="w-6 h-6 text-primary-500" />
-                        </div>
-                        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Secure & Private</h3>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Your data is encrypted and secure. We respect your privacy.
-                        </p>
-                    </div>
-
-                    {/* Feature 4 */}
-                    <div className="bg-white dark:bg-zinc-800 rounded-2xl p-6 border border-gray-200 dark:border-zinc-700 hover:border-primary-600 dark:hover:border-primary-600 transition-all duration-300 shadow-lg hover:shadow-xl">
-                        <div className="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
-                            <Zap className="w-6 h-6 text-primary-500" />
-                        </div>
-                        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Lightning Fast</h3>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Blazing fast redirects with 99.9% uptime guarantee.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            {/* CTA Section */}
-            <div className="bg-gray-100 dark:bg-zinc-800 border-y border-gray-200 dark:border-zinc-700 py-20 transition-colors duration-200">
-                <div className="container mx-auto px-4 text-center">
-                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-200">
-                        Ready to Get Started?
-                    </h2>
-                    <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 transition-colors duration-200">
-                        Join thousands of users who trust ShortLink
+            {/* ── CTA ── */}
+            <section className="bg-pg dark:bg-dk py-24 transition-colors">
+                <div className="max-w-container mx-auto px-6 text-center">
+                    <h2 className="font-display text-h2 italic text-ink dark:text-dk-text">Ready to get started?</h2>
+                    <p className="mt-3 text-base text-ink-secondary dark:text-dk-secondary max-w-md mx-auto">
+                        Join thousands of users who trust ShortLink to manage their links.
                     </p>
-                    <Link
-                        to="/register"
-                        className="inline-block px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold text-lg hover:bg-primary-700 transition-all duration-200 shadow-lg hover:shadow-xl"
-                    >
+                    <Link to="/register" className="btn-primary !px-6 !py-3 text-base mt-8">
+                        <span className="w-5 h-5 bg-accent rounded flex items-center justify-center flex-shrink-0">
+                            <ArrowRight className="w-3 h-3 text-white" />
+                        </span>
                         Create Your First Link
                     </Link>
                 </div>
-            </div>
+            </section>
 
-            {/* Footer */}
-            <footer className="bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-800 py-12 transition-colors duration-200">
-                <div className="container mx-auto px-4 text-center">
-                    <div className="flex items-center justify-center gap-2 mb-4">
-                        <Link2 className="w-6 h-6 text-primary-500" />
-                        <span className="text-xl font-bold text-gray-900 dark:text-white">ShortLink</span>
+            {/* ── Footer ── */}
+            <footer className="border-t border-ln dark:border-dk-ln py-8 transition-colors">
+                <div className="max-w-container mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-ink dark:bg-dk-text rounded-md flex items-center justify-center">
+                            <Link2 className="w-3 h-3 text-ink-inverse dark:text-dk" />
+                        </div>
+                        <span className="text-lg font-display italic text-ink dark:text-dk-text">ShortLink</span>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400 transition-colors duration-200">
-                        © 2024 ShortLink. Built with ❤️ using MERN Stack.
-                    </p>
+                    <p className="text-xs text-ink-muted dark:text-dk-muted">© 2026 ShortLink. Built with the MERN Stack.</p>
                 </div>
             </footer>
         </div>

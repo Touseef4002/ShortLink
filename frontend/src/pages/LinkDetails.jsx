@@ -1,319 +1,201 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTheme } from '../context/ThemeContext';
 import { linksAPI, analyticsAPI } from '../services/api';
 import {
-    ArrowLeft, Link2, Copy, ExternalLink, Eye, MapPin,
-    Smartphone, Globe, TrendingUp, CheckCircle, Loader, Moon, Sun
+    ArrowLeft, Link2, ExternalLink, Copy, CheckCircle,
+    Loader, BarChart3, Globe, Monitor, Share2,
+    Sun, Moon, MousePointerClick
 } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
 import { useState } from 'react';
 import {
-    LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
-    XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+    ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar
 } from 'recharts';
 
+const COLORS = ['#DC2626', '#0A0A0A', '#6B6B6B', '#A0A0A0', '#D0D0CB', '#E5E5E0'];
 
 export default function LinkDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { isDark } = useTheme();
-
+    const { toggleTheme, isDark } = useTheme();
     const [copySuccess, setCopySuccess] = useState(false);
 
-    // Fetch link details
-    const { data: linkData, isLoading: linkLoading } = useQuery({
+    const { data: link, isLoading: linkLoading } = useQuery({
         queryKey: ['link', id],
-        queryFn: async () => {
-            const response = await linksAPI.getById(id);
-            return response.data.data;
-        }
+        queryFn: async () => (await linksAPI.getById(id)).data.data,
     });
 
-    // Fetch analytics data
-    const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
+    const { data: analytics, isLoading: analyticsLoading } = useQuery({
         queryKey: ['analytics', id],
-        queryFn: async () => {
-            const response = await analyticsAPI.getSummary(id);
-            return response.data.data;
-        },
-        enabled: !!linkData
+        queryFn: async () => (await analyticsAPI.getSummary(id)).data.data,
+        enabled: !!link,
     });
 
-    const handleCopy = async () => {
-        try {
-            await navigator.clipboard.writeText(linkData?.shortUrl);
-            setCopySuccess(true);
-            setTimeout(() => setCopySuccess(false), 2000);
-        }
-        catch (err) {
-            console.error('Failed to copy: ', err);
-        }
-    }
+    const handleCopy = async (t) => { try { await navigator.clipboard.writeText(t); setCopySuccess(true); setTimeout(() => setCopySuccess(false), 2000); } catch (e) { console.error(e); } };
 
-    if (linkLoading || analyticsLoading) {
-        return (
-            <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 flex items-center justify-center transition-colors duration-200">
-                <Loader className="w-8 h-8 text-primary-500 animate-spin" />
-            </div>
-        );
-    }
+    const clicksData = analytics?.recentClicks?.map(i => ({ date: new Date(i.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), clicks: i.count })) || [];
+    const deviceData = analytics?.byDevice?.map(i => ({ name: i.name.charAt(0).toUpperCase() + i.name.slice(1), value: i.count })) || [];
+    const countryData = analytics?.byCountry?.slice(0, 5).map(i => ({ name: i.name, clicks: i.count })) || [];
+    const referrerData = analytics?.byReferrer?.slice(0, 5).map(i => ({ name: i.name || 'Direct', clicks: i.count })) || [];
 
-    if (!linkData) {
-        return (
-            <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 flex items-center justify-center transition-colors duration-200">
-                <div className="text-center">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Link not found</h2>
-                    <button
-                        onClick={() => navigate('/dashboard')}
-                        className="text-primary-500 hover:text-primary-400"
-                    >
-                        ← Back to Dashboard
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    //Prepare data for charts
-    const clicksData = analyticsData?.recentClicks?.map(item => ({
-        date: new Date(item.date).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }),
-        clicks: item.count
-    })) || [];
-
-    const deviceData = analyticsData?.byDevice?.map(item => ({
-        name: item.name.charAt(0).toUpperCase() + item.name.slice(1),
-        value: item.count
-    })) || [];
-
-    const countryData = analyticsData?.byCountry?.slice(0, 5).map(item => ({
-        name: item.name,
-        clicks: item.count
-    })) || [];
-
-    const COLORS = ['#9333ea', '#a855f7', '#c084fc', '#d8b4fe', '#e9d5ff'];
-
-    const CustomTooltip = ({ active, payload, label }) => {
-        if (active && payload && payload.length) {
-            return (
-                <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg p-3 shadow-lg transition-colors duration-200">
-                    <p className="text-gray-900 dark:text-white font-medium">{label}</p>
-                    <p className="text-primary-500">{payload[0].value} clicks</p>
-                </div>
-            );
-        }
-        return null;
+    const tooltipStyle = {
+        backgroundColor: isDark ? '#161616' : '#FFFFFF',
+        border: `1px solid ${isDark ? '#2A2A2A' : '#E5E5E0'}`,
+        borderRadius: '8px',
+        fontSize: '12px',
+        color: isDark ? '#E8E8E8' : '#0A0A0A',
     };
+    const gridColor = isDark ? '#2A2A2A' : '#E5E5E0';
+    const tickFill = isDark ? '#707070' : '#A0A0A0';
+
+    if (linkLoading) return <div className="min-h-screen bg-pg dark:bg-dk flex items-center justify-center"><Loader className="w-6 h-6 text-ink-muted dark:text-dk-muted animate-spin" /></div>;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 transition-colors duration-200">
-            {/* Header */}
-            <div className="bg-white dark:bg-zinc-800 border-b border-gray-200 dark:border-zinc-700 transition-colors duration-200">
-                <div className="container mx-auto px-4 py-6">
-                    <button
-                        onClick={() => navigate('/dashboard')}
-                        className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4 transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to Dashboard
+        <div className="min-h-screen bg-pg dark:bg-dk transition-colors">
+            <header className="sticky top-0 z-30 bg-pg/80 dark:bg-dk/80 backdrop-blur-md border-b border-ln dark:border-dk-ln transition-colors">
+                <div className="max-w-container mx-auto px-6 h-16 flex items-center justify-between">
+                    <button onClick={() => navigate('/dashboard')} className="flex items-center gap-1.5 text-sm text-ink-secondary dark:text-dk-secondary hover:text-ink dark:hover:text-dk-text transition-colors">
+                        <ArrowLeft className="w-4 h-4" />Back
                     </button>
+                    <button onClick={toggleTheme} className="p-2 rounded-lg text-ink-secondary dark:text-dk-secondary hover:bg-pg-elevated dark:hover:bg-dk-elevated transition-colors">
+                        {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                    </button>
+                </div>
+            </header>
 
+            <div className="max-w-container mx-auto px-6 py-8">
+                {/* Link Info */}
+                <div className="card !p-6 mb-8 animate-fade-in">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                        <div className="flex-1">
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                                {linkData.title || 'Untitled Link'}
-                            </h1>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 break-all">
-                                {linkData.originalUrl}
-                            </p>
-                            <div className="flex items-center gap-2">
-                                <code className="px-3 py-1 bg-gray-100 dark:bg-zinc-900 text-primary-400 rounded-lg text-sm font-mono">
-                                    {linkData.shortUrl}
-                                </code>
-                                <button
-                                    onClick={handleCopy}
-                                    className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-lg transition-colors"
-                                    title="Copy to clipboard"
-                                >
-                                    {copySuccess ? (
-                                        <CheckCircle className="w-4 h-4 text-green-500" />
-                                    ) : (
-                                        <Copy className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                                    )}
+                        <div className="flex-1 min-w-0">
+                            <h1 className="font-display text-h4 italic text-ink dark:text-dk-text truncate">{link?.title || 'Untitled Link'}</h1>
+                            <p className="text-sm text-ink-muted dark:text-dk-muted truncate mt-1">{link?.originalUrl}</p>
+                            <div className="flex items-center gap-2 mt-3">
+                                <code className="px-2 py-0.5 bg-pg-elevated dark:bg-dk-elevated border border-ln dark:border-dk-ln rounded text-sm font-mono text-ink dark:text-dk-text">{link?.shortUrl}</code>
+                                <button onClick={() => handleCopy(link?.shortUrl)} className="p-1 hover:bg-pg-elevated dark:hover:bg-dk-elevated rounded transition-colors">
+                                    {copySuccess ? <CheckCircle className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5 text-ink-muted dark:text-dk-muted" />}
                                 </button>
-                                <a
-                                    href={linkData.shortUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-lg transition-colors"
-                                    title="Visit link"
-                                >
-                                    <ExternalLink className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                                </a>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Analytics Content */}
-            <div className="container mx-auto px-4 py-8">
-                {/* Summary Cards */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                    <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-6 transition-colors duration-200">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-primary-500/10 rounded-lg">
-                                <Eye className="w-5 h-5 text-primary-500" />
-                            </div>
-                            <span className="text-gray-600 dark:text-gray-400 text-sm">Total Clicks</span>
-                        </div>
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white">{analyticsData?.totalClicks || 0}</p>
-                    </div>
-
-                    <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-6 transition-colors duration-200">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-primary-500/10 rounded-lg">
-                                <MapPin className="w-5 h-5 text-primary-500" />
-                            </div>
-                            <span className="text-gray-600 dark:text-gray-400 text-sm">Countries</span>
-                        </div>
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white">{analyticsData?.byCountry?.length || 0}</p>
-                    </div>
-
-                    <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-6 transition-colors duration-200">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-primary-500/10 rounded-lg">
-                                <Smartphone className="w-5 h-5 text-primary-500" />
-                            </div>
-                            <span className="text-gray-600 dark:text-gray-400 text-sm">Unique Visitors</span>
-                        </div>
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white">{analyticsData?.uniqueVisitors || 0}</p>
-                    </div>
-
-                    <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-6 transition-colors duration-200">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-primary-500/10 rounded-lg">
-                                <TrendingUp className="w-5 h-5 text-primary-500" />
-                            </div>
-                            <span className="text-gray-600 dark:text-gray-400 text-sm">Avg. Daily</span>
-                        </div>
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                            {analyticsData?.recentClicks?.length > 0
-                                ? Math.round(analyticsData.totalClicks / analyticsData.recentClicks.length)
-                                : 0}
-                        </p>
+                        <a href={link?.shortUrl} target="_blank" rel="noopener noreferrer" className="btn-primary text-sm self-start"><ExternalLink className="w-3.5 h-3.5" />Visit</a>
                     </div>
                 </div>
 
-                {/* Charts */}
-                <div className="grid lg:grid-cols-2 gap-6">
-                    {/* Clicks Over Time */}
-                    <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-6 transition-colors duration-200">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Clicks Over Time</h3>
-                        {clicksData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height={250}>
-                                <LineChart data={clicksData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#3f3f46' : '#e5e7eb'} />
-                                    <XAxis
-                                        dataKey="date"
-                                        stroke={isDark ? '#9ca3af' : '#6b7280'}
-                                        style={{ fontSize: '12px' }}
-                                    />
-                                    <YAxis
-                                        stroke={isDark ? '#9ca3af' : '#6b7280'}
-                                        style={{ fontSize: '12px' }}
-                                    />
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <Line type="monotone" dataKey="clicks" stroke="#9333ea" strokeWidth={2} />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        ) : (
-                            <div className="h-[250px] flex items-center justify-center text-gray-500 dark:text-gray-400">
-                                No click data yet
-                            </div>
-                        )}
-                    </div>
+                {analyticsLoading ? (
+                    <div className="flex items-center justify-center py-20"><Loader className="w-5 h-5 text-ink-muted dark:text-dk-muted animate-spin" /></div>
+                ) : (
+                    <>
+                        {/* Summary */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+                            {[
+                                { icon: MousePointerClick, value: analytics?.totalClicks || 0, label: 'Total Clicks', accent: true },
+                                { icon: Globe, value: analytics?.byCountry?.length || 0, label: 'Countries' },
+                                { icon: Monitor, value: analytics?.byDevice?.length || 0, label: 'Devices' },
+                                { icon: Share2, value: analytics?.byReferrer?.length || 0, label: 'Referrers' },
+                            ].map(s => (
+                                <div key={s.label} className="card">
+                                    <s.icon className={`w-4 h-4 mb-2 ${s.accent ? 'text-accent' : 'text-ink-muted dark:text-dk-muted'}`} />
+                                    <p className="font-display text-2xl italic text-ink dark:text-dk-text">{s.value}</p>
+                                    <p className="mt-0.5 text-xs text-ink-muted dark:text-dk-muted uppercase tracking-wider">{s.label}</p>
+                                </div>
+                            ))}
+                        </div>
 
-                    {/* Device Breakdown */}
-                    <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-6 transition-colors duration-200">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Device Breakdown</h3>
-                        {deviceData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height={250}>
-                                <PieChart>
-                                    <Pie
-                                        data={deviceData}
-                                        cx="50%"
-                                        cy="50%"
-                                        labelLine={false}
-                                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                        outerRadius={80}
-                                        fill="#8884d8"
-                                        dataKey="value"
-                                    >
-                                        {deviceData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip content={<CustomTooltip />} />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        ) : (
-                            <div className="h-[250px] flex items-center justify-center text-gray-500 dark:text-gray-400">
-                                No device data yet
+                        {/* Charts */}
+                        <div className="grid lg:grid-cols-2 gap-4">
+                            {/* Clicks Over Time */}
+                            <div className="card !p-5 lg:col-span-2">
+                                <h3 className="text-sm font-semibold text-ink dark:text-dk-text font-sans uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                                    <BarChart3 className="w-3.5 h-3.5 text-accent" />Clicks Over Time
+                                </h3>
+                                {clicksData.length > 0 ? (
+                                    <ResponsiveContainer width="100%" height={260}>
+                                        <LineChart data={clicksData}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                                            <XAxis dataKey="date" tick={{ fill: tickFill, fontSize: 11 }} stroke={gridColor} />
+                                            <YAxis tick={{ fill: tickFill, fontSize: 11 }} stroke={gridColor} />
+                                            <Tooltip contentStyle={tooltipStyle} />
+                                            <Line type="monotone" dataKey="clicks" stroke="#DC2626" strokeWidth={2} dot={{ fill: '#DC2626', r: 2.5, strokeWidth: 0 }} activeDot={{ r: 4, strokeWidth: 0, fill: '#B91C1C' }} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                ) : <div className="h-[260px] flex items-center justify-center text-xs text-ink-muted dark:text-dk-muted">No click data</div>}
                             </div>
-                        )}
-                    </div>
 
-                    {/* Top Countries */}
-                    <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-6 transition-colors duration-200">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Countries</h3>
-                        {countryData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height={250}>
-                                <BarChart data={countryData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#3f3f46' : '#e5e7eb'} />
-                                    <XAxis
-                                        dataKey="name"
-                                        stroke={isDark ? '#9ca3af' : '#6b7280'}
-                                        style={{ fontSize: '12px' }}
-                                    />
-                                    <YAxis
-                                        stroke={isDark ? '#9ca3af' : '#6b7280'}
-                                        style={{ fontSize: '12px' }}
-                                    />
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <Bar dataKey="clicks" fill="#9333ea" />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        ) : (
-                            <div className="h-[250px] flex items-center justify-center text-gray-500 dark:text-gray-400">
-                                No location data yet
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Top Referrers */}
-                    <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-6 transition-colors duration-200">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Referrers</h3>
-                        {analyticsData?.byReferrer?.length > 0 ? (
-                            <div className="space-y-3">
-                                {analyticsData.byReferrer.slice(0, 5).map((referrer, index) => (
-                                    <div key={index} className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center">
-                                                <Globe className="w-4 h-4 text-primary-500" />
-                                            </div>
-                                            <span className="text-gray-900 dark:text-white">{referrer.name}</span>
+                            {/* Devices */}
+                            <div className="card !p-5">
+                                <h3 className="text-sm font-semibold text-ink dark:text-dk-text font-sans uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                                    <Monitor className="w-3.5 h-3.5 text-ink-muted dark:text-dk-muted" />Devices
+                                </h3>
+                                {deviceData.length > 0 ? (
+                                    <>
+                                        <ResponsiveContainer width="100%" height={200}>
+                                            <PieChart>
+                                                <Pie data={deviceData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={3} dataKey="value">
+                                                    {deviceData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                                                </Pie>
+                                                <Tooltip contentStyle={tooltipStyle} />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                        <div className="flex flex-wrap gap-3 mt-2 justify-center">
+                                            {deviceData.map((d, i) => (
+                                                <span key={d.name} className="flex items-center gap-1.5 text-xs">
+                                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                                                    <span className="text-ink-muted dark:text-dk-muted">{d.name}</span>
+                                                    <span className="text-ink dark:text-dk-text font-medium">{d.value}</span>
+                                                </span>
+                                            ))}
                                         </div>
-                                        <span className="text-gray-600 dark:text-gray-400">{referrer.count} clicks</span>
+                                    </>
+                                ) : <div className="h-[200px] flex items-center justify-center text-xs text-ink-muted dark:text-dk-muted">No device data</div>}
+                            </div>
+
+                            {/* Countries */}
+                            <div className="card !p-5">
+                                <h3 className="text-sm font-semibold text-ink dark:text-dk-text font-sans uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                                    <Globe className="w-3.5 h-3.5 text-ink-muted dark:text-dk-muted" />Top Countries
+                                </h3>
+                                {countryData.length > 0 ? (
+                                    <ResponsiveContainer width="100%" height={200}>
+                                        <BarChart data={countryData} layout="vertical">
+                                            <CartesianGrid strokeDasharray="3 3" stroke={gridColor} horizontal={false} />
+                                            <XAxis type="number" tick={{ fill: tickFill, fontSize: 11 }} stroke={gridColor} />
+                                            <YAxis type="category" dataKey="name" tick={{ fill: tickFill, fontSize: 11 }} stroke={gridColor} width={60} />
+                                            <Tooltip contentStyle={tooltipStyle} />
+                                            <Bar dataKey="clicks" fill="#DC2626" radius={[0, 4, 4, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                ) : <div className="h-[200px] flex items-center justify-center text-xs text-ink-muted dark:text-dk-muted">No country data</div>}
+                            </div>
+
+                            {/* Referrers */}
+                            <div className="card !p-5 lg:col-span-2">
+                                <h3 className="text-sm font-semibold text-ink dark:text-dk-text font-sans uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                                    <Share2 className="w-3.5 h-3.5 text-ink-muted dark:text-dk-muted" />Top Referrers
+                                </h3>
+                                {referrerData.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {referrerData.map((r, i) => {
+                                            const max = Math.max(...referrerData.map(x => x.clicks));
+                                            const pct = max > 0 ? (r.clicks / max) * 100 : 0;
+                                            return (
+                                                <div key={i}>
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <span className="text-sm text-ink dark:text-dk-text truncate mr-4">{r.name}</span>
+                                                        <span className="text-sm text-ink-muted dark:text-dk-muted flex-shrink-0">{r.clicks}</span>
+                                                    </div>
+                                                    <div className="w-full h-1 bg-pg-elevated dark:bg-dk-elevated rounded-full overflow-hidden">
+                                                        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: COLORS[i % COLORS.length] }} />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
-                                ))}
+                                ) : <div className="h-[140px] flex items-center justify-center text-xs text-ink-muted dark:text-dk-muted">No referrer data</div>}
                             </div>
-                        ) : (
-                            <div className="h-[250px] flex items-center justify-center text-gray-500 dark:text-gray-400">
-                                No referrer data yet
-                            </div>
-                        )}
-                    </div>
-                </div>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );
