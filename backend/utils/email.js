@@ -1,81 +1,26 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-//create transporter
-const createTransporter = () => {
-    if(process.env.NODE_ENV === 'production') {
-        return nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: process.env.SMTP_PORT,
-            secure: true,
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS
-            }
-        });
-    } else{
-        return nodemailer.createTransport({
-            host: 'smtp.ethereal.email',
-            port: 587,
-            auth: {
-                user: process.env.ETHEREAL_USER || 'your-ethereal-user@thereal.email',
-                pass: process.env.ETHEREAL_PASS || 'your-ethereal-password'
-            }
-        });
-    }
-}
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendVerificationEmail = async (email, verificationToken, username) => {
-    try{
-        const transporter = createTransporter();
-
+    try {
         const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
-        
-        const mailOptions = {
-            from: `"ShortLink" <${process.env.SMTP_FROM || 'no-reply@shortlink.com'}>`,
-            to : email,
+
+        const { data, error } = await resend.emails.send({
+            from: process.env.SMTP_FROM || 'onboarding@resend.dev',
+            to: email,
             subject: 'Email Verification - ShortLink',
             html: `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            line-height: 1.6;
-                            color: #333;
-                        }
-                        .container {
-                            max-width: 600px;
-                            margin: 0 auto;
-                            padding: 20px;
-                        }
-                        .header {
-                            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
-                            color: white;
-                            padding: 30px;
-                            text-align: center;
-                            border-radius: 10px 10px 0 0;
-                        }
-                        .content {
-                            background: #f9fafb;
-                            padding: 30px;
-                            border-radius: 0 0 10px 10px;
-                        }
-                        .button {
-                            display: inline-block;
-                            padding: 12px 30px;
-                            background: #9333ea;
-                            color: white;
-                            text-decoration: none;
-                            border-radius: 8px;
-                            margin: 20px 0;
-                        }
-                        .footer {
-                            text-align: center;
-                            margin-top: 20px;
-                            color: #6b7280;
-                            font-size: 12px;
-                        }
+                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                        .header { background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                        .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+                        .button { display: inline-block; padding: 12px 30px; background: #9333ea; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; }
+                        .footer { text-align: center; margin-top: 20px; color: #6b7280; font-size: 12px; }
                     </style>
                 </head>
                 <body>
@@ -95,94 +40,54 @@ const sendVerificationEmail = async (email, verificationToken, username) => {
                             <p>If you didn't create an account, you can safely ignore this email.</p>
                         </div>
                         <div class="footer">
-                            <p>© 2026 ShortLink. All rights reserved.</p>
+                            <p>&copy; 2026 ShortLink. All rights reserved.</p>
                         </div>
                     </div>
                 </body>
                 </html>
             `
-        };
+        });
 
-        const info = await transporter.sendMail(mailOptions);
-
-        console.log('Verification email sent: %s', info.messageId);
-
-        if(process.env.NODE_ENV !== 'production') {
-            console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+        if (error) {
+            console.error('Resend error:', error);
+            return { success: false, error: error.message };
         }
 
-        return {success: true, messageId: info.messageId};
+        console.log('Verification email sent:', data.id);
+        return { success: true, messageId: data.id };
     }
-    catch(error){
+    catch (error) {
         console.error('Error sending verification email:', error);
-        return {success: false, error: error.message};
+        return { success: false, error: error.message };
     }
 };
 
 const sendPasswordResetEmail = async (email, resetToken, username) => {
-    try{
-        const transporter = createTransporter();
-
+    try {
         const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-        const mailOptions = {
-            from: `"ShortLink" <${process.env.SMTP_FROM || 'no-reply@shortlink.com'}>`,
-            to : email,
+        const { data, error } = await resend.emails.send({
+            from: process.env.SMTP_FROM || 'onboarding@resend.dev',
+            to: email,
             subject: 'Password Reset - ShortLink',
             html: `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            line-height: 1.6;
-                            color: #333;
-                        }
-                        .container {
-                            max-width: 600px;
-                            margin: 0 auto;
-                            padding: 20px;
-                        }
-                        .header {
-                            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
-                            color: white;
-                            padding: 30px;
-                            text-align: center;
-                            border-radius: 10px 10px 0 0;
-                        }
-                        .content {
-                            background: #f9fafb;
-                            padding: 30px;
-                            border-radius: 0 0 10px 10px;
-                        }
-                        .button {
-                            display: inline-block;
-                            padding: 12px 30px;
-                            background: #9333ea;
-                            color: white;
-                            text-decoration: none;
-                            border-radius: 8px;
-                            margin: 20px 0;
-                        }
-                        .warning {
-                            background: #fef3c7;
-                            border-left: 4px solid #f59e0b;
-                            padding: 15px;
-                            margin: 20px 0;
-                        }
-                        .footer {
-                            text-align: center;
-                            margin-top: 20px;
-                            color: #6b7280;
-                            font-size: 12px;
-                        }
+                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                        .header { background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                        .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+                        .button { display: inline-block; padding: 12px 30px; background: #9333ea; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; }
+                        .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; }
+                        .footer { text-align: center; margin-top: 20px; color: #6b7280; font-size: 12px; }
                     </style>
                 </head>
                 <body>
                     <div class="container">
                         <div class="header">
-                            <h1>🔐 Password Reset</h1>
+                            <h1>🔑 Password Reset</h1>
                         </div>
                         <div class="content">
                             <p>Hi ${username},</p>
@@ -203,29 +108,27 @@ const sendPasswordResetEmail = async (email, resetToken, username) => {
                             <p>If you didn't request a password reset, your account is still secure and you can ignore this email.</p>
                         </div>
                         <div class="footer">
-                            <p>© 2026 ShortLink. All rights reserved.</p>
+                            <p>&copy; 2026 ShortLink. All rights reserved.</p>
                         </div>
                     </div>
                 </body>
                 </html>
             `
-        };
+        });
 
-        const info = await transporter.sendMail(mailOptions);
-
-        console.log('Password reset email sent: %s', info.messageId);
-
-        if(process.env.NODE_ENV !== 'production') {
-            console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+        if (error) {
+            console.error('Resend error:', error);
+            return { success: false, error: error.message };
         }
 
-        return {success: true, messageId: info.messageId};
+        console.log('Password reset email sent:', data.id);
+        return { success: true, messageId: data.id };
     }
-    catch(error){
+    catch (error) {
         console.error('Error sending password reset email:', error);
-        return {success: false, error: error.message};
+        return { success: false, error: error.message };
     }
-}
+};
 
 module.exports = {
     sendVerificationEmail,
