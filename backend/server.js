@@ -1,14 +1,3 @@
-process.on('uncaughtException', (error) => {
-    console.error('💥 UNCAUGHT EXCEPTION:', error);
-    process.exit(1);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('💥 UNHANDLED REJECTION:', reason);
-    process.exit(1);
-});
-
-
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -19,6 +8,8 @@ require('dotenv').config();
 const connectDB = require('./config/db');
 const logger = require('./utils/logger');
 const app = express();
+
+app.set('trust proxy', 1);
 
 connectDB();
 
@@ -69,27 +60,27 @@ const limiter = ratelimit({
     max: 100,
     message: {
         success: false,
-        message:'Too many requests from this IP, please try again later.'
+        message: 'Too many requests from this IP, please try again later.'
     },
     standardHeaders: true,
     legacyHeaders: false,
 });
 
-app.use('/api',limiter);
+app.use('/api', limiter);
 
 const authLimiter = ratelimit({
     windowMs: 15 * 60 * 1000,
     max: 5,
     message: {
         success: false,
-        message:'Too many authentication attempts from this IP, please try again later.'
+        message: 'Too many authentication attempts from this IP, please try again later.'
     }
 });
 
 const authRoutes = require('./routes/auth');
 const linkRoutes = require('./routes/links');
 const analyticsRoutes = require('./routes/analytics');
-const {redirectLink} = require('./controllers/linkController');
+const { redirectLink } = require('./controllers/linkController');
 
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
@@ -133,10 +124,10 @@ app.use((err, req, res, next) => {
         ? 'Internal Server Error'
         : err.message;
 
-    res.status(err.statusCode ||500).json({
+    res.status(err.statusCode || 500).json({
         success: false,
-        message, 
-        ...(process.env.NODE_ENV !== 'production' && {stack: err.stack})
+        message,
+        ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
     });
 });
 

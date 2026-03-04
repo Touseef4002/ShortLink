@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('user', JSON.stringify(user));
             setUser(user);
 
-            return { success: true };
+            return { success: true, message: response.data.message };
         } catch (error) {
             return {
                 success: false,
