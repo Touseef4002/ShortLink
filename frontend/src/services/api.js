@@ -1,16 +1,16 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://localhost:5000',
-  headers: {
-    'Content-Type': 'application/json',
-  },
+    baseURL: import.meta.env.VITE_API_URL || 'https://localhost:5000',
+    headers: {
+        'Content-Type': 'application/json',
+    },
 });
 
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
-        if(token) {
+        if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
@@ -33,23 +33,25 @@ api.interceptors.response.use(
 );
 
 export const authAPI = {
-    register : (data) => api.post('/api/auth/register', data),
-    login : (data) => api.post('/api/auth/login', data),
-    getMe : () => api.get('/api/auth/me')
+    register: (data) => api.post('/api/auth/register', data),
+    login: (data) => api.post('/api/auth/login', data),
+    getMe: () => api.get('/api/auth/me'),
+    forgotPassword: (email) => api.post('/api/auth/forgot-password', { email }),
+    resetPassword: (token, password) => api.post(`/api/auth/reset-password/${token}`, { password }),
 };
 
 export const linksAPI = {
-    getAll : () => api.get('/api/links'),
-    getById : (id) => api.get(`/api/links/${id}`),
-    create : (data) => api.post('/api/links', data),
-    update : (id, data) => api.put(`/api/links/${id}`, data),
-    delete : (id) => api.delete(`/api/links/${id}`),
+    getAll: () => api.get('/api/links'),
+    getById: (id) => api.get(`/api/links/${id}`),
+    create: (data) => api.post('/api/links', data),
+    update: (id, data) => api.put(`/api/links/${id}`, data),
+    delete: (id) => api.delete(`/api/links/${id}`),
 };
 
 export const analyticsAPI = {
-    getAnalytics : (linkId) => api.get(`/api/analytics/${linkId}`),
-    getSummary : (linkId) => api.get(`/api/analytics/${linkId}/summary`),
-    getDashboardStats : () => api.get('/api/analytics/dashboard/stats'),
+    getAnalytics: (linkId) => api.get(`/api/analytics/${linkId}`),
+    getSummary: (linkId) => api.get(`/api/analytics/${linkId}/summary`),
+    getDashboardStats: () => api.get('/api/analytics/dashboard/stats'),
 };
 
 export default api;
