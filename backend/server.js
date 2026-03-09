@@ -98,7 +98,7 @@ app.get('/health', (req, res) => {
     })
 })
 
-app.get('/:shortCode', redirectLink);
+app.get(/^\/[a-zA-Z0-9_-]{6,12}$/, redirectLink);
 
 app.use((req, res, next) => {
     logger.warn('Route not found', {
