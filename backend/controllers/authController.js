@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const { generateToken } = require('../middleware/auth');
 const crypto = require('crypto');
-const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/email');
+const { sendPasswordResetEmail } = require('../utils/email');
 
 const register = async (req, res) => {
     try {
